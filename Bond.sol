@@ -171,7 +171,7 @@ contract SimpleTimelock {
     }
 
     function claimAll(uint256 index) public noReentrant {
-        if( bondData[bondHolders[msg.sender].at(index)].releaseTimeStamp < block.timestamp)
+        if( bondData[bondHolders[msg.sender].at(index)].releaseTimeStamp >= block.timestamp)
         {
             bep20Token.transferFrom(address(this), msg.sender,bondData[bondHolders[msg.sender].at(0)].amount);
             bondHolders[msg.sender].remove(index);
