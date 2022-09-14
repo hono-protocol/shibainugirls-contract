@@ -39,6 +39,7 @@ contract SimpleTimelock {
     uint256 public timePeriod;
     uint256 public lowerCap;
     uint256 public upperCap;
+
     bool public isActive;
 
     uint256 public profit = 10400;
@@ -129,19 +130,20 @@ contract SimpleTimelock {
     }
 
     function deposit(uint256 amount) public onlyDepositor{
+
         bep20Token.transferFrom(msg.sender, address(this), amount);
         availableToken = availableToken + amount;
-
         if(availableToken >= upperCap)
         {
             isActive = true;
         }
+
     }
 
     function buyBond(uint256 amount) public {
 
         uint256 currentPrice = getCurrentPrice(amount);
-        require(availableToken - currentPrice >= 0 && isActive, "No more money");
+        require(availableToken - currentPrice >= 0 && isActive, "Not enough token to sell");
         
         bondData[currentBondId].amount = currentPrice;
 
@@ -163,19 +165,22 @@ contract SimpleTimelock {
         return bep20Token.balanceOf(lpTokenAddress).mul(lpAmount).div(lpToken.totalSupply()).mul(2).mul(profit).div(profitDenominator);
     }
 
-    function count()  public view returns (uint256){
-        return bondHolders[msg.sender].length();
+    function CountBond(address bonder)  public view returns (uint256){
+        return bondHolders[bonder].length();
     }
-    function hehe(uint256 index)  public view returns (uint256){
+
+    function GetBondInfo(uint256 index)  public view returns (uint256){
         return bondHolders[msg.sender].at(index);
     }
 
-    function claimAll(uint256 index) public noReentrant {
+    function claim(uint256 index) public noReentrant {
+
         if( bondData[bondHolders[msg.sender].at(index)].releaseTimeStamp >= block.timestamp)
         {
             bep20Token.transferFrom(address(this), msg.sender,bondData[bondHolders[msg.sender].at(0)].amount);
             bondHolders[msg.sender].remove(index);
         }
+
     }
 
     function transferAccidentallyLockedTokens(IERC20 token, uint256 amount) public onlyOwner noReentrant {

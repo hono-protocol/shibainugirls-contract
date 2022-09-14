@@ -229,6 +229,11 @@ interface IDEXRouter {
     ) external;
 }
 
+interface IBond {
+    function deposit(uint256 depositAmmount) external;
+}
+
+
 interface IDividendDistributor {
     function setDistributionCriteria(uint256 _minPeriod, uint256 _minDistribution) external;
     function setShare(address shareholder, uint256 amount, uint256 stakingAmount) external;
@@ -236,6 +241,7 @@ interface IDividendDistributor {
     function depositFromProxy(address proxy, uint256 depositAmmount) external;
     function process(uint256 gas) external;
 }
+
 
 interface IReflectionProxyContract {
     function transferBEP20(
@@ -357,17 +363,6 @@ contract DividendDistributor is IDividendDistributor {
     function deposit(uint256 depositAmmount) external override onlyToken {
         uint256 balanceBefore = BUSD.balanceOf(address(this));
         BUSD.transferFrom(msg.sender, address(this),depositAmmount);
-        // address[] memory path = new address[](2);
-        // path[0] = WBNB;
-        // path[1] = address(BUSD);
-
-        // router.swapExactETHForTokensSupportingFeeOnTransferTokens{value: msg.value}(
-        //     0,
-        //     path,
-        //     address(this),
-        //     block.timestamp
-        // );
-
         uint256 amount = BUSD.balanceOf(address(this)).sub(balanceBefore);
 
         totalDividends = totalDividends.add(amount);
@@ -456,7 +451,10 @@ contract EverGrow is IBEP20, Auth {
     address BUSD = 0xbe31B897aE6612F551909B93e2477DE92169d5fd;
     IBEP20 BUSDContract = IBEP20(0xbe31B897aE6612F551909B93e2477DE92169d5fd);
     IStakingContract stakingContract;
-    address stakingContractAddress;
+
+    address public stakingContractAddress;
+    address public bondContractAddress;
+    address public inverseBondContractAddress;
 
     address public WBNB = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
     address DEAD = 0x000000000000000000000000000000000000dEaD;
@@ -464,7 +462,7 @@ contract EverGrow is IBEP20, Auth {
     address DEAD_NON_CHECKSUM = 0x000000000000000000000000000000000000dEaD;
 
     string constant _name = "Shiba Inu Chan";
-    string constant _symbol = "SIC9";
+    string constant _symbol = "SIC10";
     uint8 constant _decimals = 9;
 
     uint256 _totalSupply = 1_000_000_000_000_000 * (10 ** _decimals);
@@ -477,11 +475,13 @@ contract EverGrow is IBEP20, Auth {
     mapping (address => bool) isTxLimitExempt;
     mapping (address => bool) isDividendExempt;
 
+    uint256 bondFee = 200;
+    uint256 inverseBondFee = 200;
     uint256 liquidityFee = 200;
     uint256 buybackFee = 300;
     uint256 reflectionFee = 800;
     uint256 marketingFee = 100;
-    uint256 totalFee = 1400;
+    uint256 totalFee = 1800;
     uint256 feeDenominator = 10000;
 
     address public autoLiquidityReceiver;
@@ -557,6 +557,7 @@ contract EverGrow is IBEP20, Auth {
         approve(distributorAddress, _totalSupply);
         approve(address(pair), _totalSupply);
         _balances[msg.sender] = _totalSupply;
+
         emit Transfer(address(0), msg.sender, _totalSupply);
     }
 
@@ -576,10 +577,7 @@ contract EverGrow is IBEP20, Auth {
         emit Approval(msg.sender, spender, amount);
         return true;
     }
-    function SetStakingContract(address _stakingContract) public onlyOwner{
-        stakingContract = IStakingContract(_stakingContract);
-        stakingContractAddress = _stakingContract;
-    }
+
     function approveMax(address spender) external returns (bool) {
         return approve(spender, _totalSupply);
     }
@@ -675,8 +673,10 @@ contract EverGrow is IBEP20, Auth {
 
     function swapBack() internal swapping {
         uint256 dynamicLiquidityFee = isOverLiquified(targetLiquidity, targetLiquidityDenominator) ? 0 : liquidityFee;
+        uint256 amountTokenInverseBond = swapThreshold.mul(inverseBondFee).div(totalFee);
+
         uint256 amountToLiquify = swapThreshold.mul(dynamicLiquidityFee).div(totalFee).div(2);
-        uint256 amountToSwap = swapThreshold.sub(amountToLiquify);
+        uint256 amountToSwap = swapThreshold.sub(amountToLiquify).sub(amountTokenInverseBond);
 
         address[] memory path = new address[](2);
         path[0] = address(this);
@@ -701,9 +701,11 @@ contract EverGrow is IBEP20, Auth {
         uint256 amountBUSDLiquidity = amountBUSD.mul(dynamicLiquidityFee).div(totalBUSDFee).div(2);
         uint256 amountBUSDReflection = amountBUSD.mul(reflectionFee).div(totalBUSDFee);
         uint256 amountBUSDMarketing = amountBUSD.mul(marketingFee).div(totalBUSDFee);
-        
+        uint256 amountBUSDBond = amountBUSD.mul(bondFee).div(totalBUSDFee);
 
         try distributor.deposit(amountBUSDReflection) {} catch {}
+        try IBond(bondContractAddress).deposit(amountBUSDBond) {} catch {}
+        try IBond(inverseBondContractAddress).deposit(amountTokenInverseBond) {} catch {}
 
         BUSDContract.transferFrom(address(this), marketingFeeReceiver, amountBUSDMarketing);
 
@@ -862,6 +864,31 @@ contract EverGrow is IBEP20, Auth {
 
     function isOverLiquified(uint256 target, uint256 accuracy) public view returns (bool) {
         return getLiquidityBacking(accuracy) > target;
+    }
+
+    function SetStakingContract(address _stakingContract) public authorized{
+        isDividendExempt[_stakingContract] = true;
+        distributor.setShare(_stakingContract, 0, 0);
+        stakingContract = IStakingContract(_stakingContract);
+        stakingContractAddress = _stakingContract;
+        isFeeExempt[_stakingContract] = true;
+        isTxLimitExempt[_stakingContract] = true;
+    }
+
+    function SetBond(address _bondAndVault) public authorized{
+        isDividendExempt[_bondAndVault] = true;
+        distributor.setShare(_bondAndVault, 0, 0);
+        isFeeExempt[_bondAndVault] = true;
+        isTxLimitExempt[_bondAndVault] = true;
+        bondContractAddress = _bondAndVault;
+    }
+
+    function SetInverseBond(address _bondAndVault) public authorized{
+        isDividendExempt[_bondAndVault] = true;
+        distributor.setShare(_bondAndVault, 0, 0);
+        isFeeExempt[_bondAndVault] = true;
+        isTxLimitExempt[_bondAndVault] = true;
+        inverseBondContractAddress = _bondAndVault;
     }
 
     event AutoLiquify(uint256 amountBUSD, uint256 amountShiba);
