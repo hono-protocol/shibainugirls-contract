@@ -673,10 +673,10 @@ contract EverGrow is IBEP20, Auth {
 
     function swapBack() internal swapping {
         uint256 dynamicLiquidityFee = isOverLiquified(targetLiquidity, targetLiquidityDenominator) ? 0 : liquidityFee;
-        uint256 amountTokenInverseBond = swapThreshold.mul(inverseBondFee).div(totalFee);
+        uint256 amountTokenBond = swapThreshold.mul(bondFee).div(totalFee);
 
         uint256 amountToLiquify = swapThreshold.mul(dynamicLiquidityFee).div(totalFee).div(2);
-        uint256 amountToSwap = swapThreshold.sub(amountToLiquify).sub(amountTokenInverseBond);
+        uint256 amountToSwap = swapThreshold.sub(amountToLiquify).sub(amountTokenBond);
 
         address[] memory path = new address[](2);
         path[0] = address(this);
@@ -696,17 +696,17 @@ contract EverGrow is IBEP20, Auth {
 
         BUSDContract.transferFrom(address(reflectionProxyContract), address(this), amountBUSD);
 
-        uint256 totalBUSDFee = totalFee.sub(dynamicLiquidityFee.div(2));
+        uint256 totalBUSDFee = totalFee.sub(dynamicLiquidityFee.div(2)).sub(inverseBondFee);
 
         uint256 amountBUSDLiquidity = amountBUSD.mul(dynamicLiquidityFee).div(totalBUSDFee).div(2);
         uint256 amountBUSDReflection = amountBUSD.mul(reflectionFee).div(totalBUSDFee);
         uint256 amountBUSDMarketing = amountBUSD.mul(marketingFee).div(totalBUSDFee);
-        uint256 amountBUSDBond = amountBUSD.mul(bondFee).div(totalBUSDFee);
+        uint256 amountBUSDInverseBond = amountBUSD.mul(inverseBondFee).div(totalBUSDFee);
 
         try distributor.deposit(amountBUSDReflection) {} catch {}
-        try IBond(bondContractAddress).deposit(amountBUSDBond) {} catch {}
-        try IBond(inverseBondContractAddress).deposit(amountTokenInverseBond) {} catch {}
+        try IBond(bondContractAddress).deposit(amountTokenBond) {} catch {}
 
+        BUSDContract.transferFrom(address(this), inverseBondContractAddress, amountBUSDInverseBond);
         BUSDContract.transferFrom(address(this), marketingFeeReceiver, amountBUSDMarketing);
 
         if(amountToLiquify > 0){
@@ -881,6 +881,7 @@ contract EverGrow is IBEP20, Auth {
         isFeeExempt[_bondAndVault] = true;
         isTxLimitExempt[_bondAndVault] = true;
         bondContractAddress = _bondAndVault;
+        BUSDContract.approve(_bondAndVault, BUSDContract.totalSupply());
     }
 
     function SetInverseBond(address _bondAndVault) public authorized{

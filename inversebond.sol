@@ -69,9 +69,9 @@ contract SimpleTimelock {
         lpTokenAddress =0xa2127Fd598a88DB2583cBE22Bd4BB996f81F025F;
         stableToken = IERC20(0xbe31B897aE6612F551909B93e2477DE92169d5fd);
         stableTokenAddress = 0xbe31B897aE6612F551909B93e2477DE92169d5fd;
+
         bep20Token = IERC20(0x6a258a2A57e0B15C5eE0383Cb7853C7585AE7763);
         bep20TokenAddress = 0x6a258a2A57e0B15C5eE0383Cb7853C7585AE7763;
-        bep20Token.approve(address(this),bep20Token.totalSupply());
 
         timePeriod = 1;
         lowerCap = 10000000000000000;
@@ -129,40 +129,21 @@ contract SimpleTimelock {
         upperCap = _upperCap;
     }
 
-    function deposit(uint256 amount) external onlyDepositor{
-
-        bep20Token.transferFrom(msg.sender, address(this), amount);
-        availableToken = availableToken + amount;
-        if(availableToken >= upperCap)
-        {
-            isActive = true;
-        }
-
-    }
-
-    function buyBond(uint256 amount) public {
-
+    function sellBond(uint256 amount) public {
         uint256 currentPrice = getCurrentPrice(amount);
-        require(availableToken - currentPrice >= 0 && isActive, "Not enough token to sell");
+
+        require(stableToken.balanceOf(address(this)) - currentPrice >= 0 && isActive, "Not enough token to sell");
         
-        bondData[currentBondId].amount = currentPrice;
-
-        lpToken.transferFrom(msg.sender, address(this), amount);
-        bondHolders[msg.sender].add(currentBondId);
-
-        bondData[currentBondId].releaseTimeStamp = block.timestamp + timePeriod;
-
-        currentBondId = currentBondId +1;
-        availableToken = availableToken - currentPrice;
-
-        if(availableToken < lowerCap)
+        stableToken.transferFrom(address(this),msg.sender,currentPrice);
+        
+        if(stableToken.balanceOf(address(this)) < lowerCap)
         {
             isActive = false;
         }
     }
 
     function getCurrentPrice(uint256 lpAmount)  public view returns (uint256){
-        return bep20Token.balanceOf(lpTokenAddress).mul(lpAmount).div(lpToken.totalSupply()).mul(2).mul(profit).div(profitDenominator);
+        return stableToken.balanceOf(lpTokenAddress).mul(lpAmount).div(lpToken.totalSupply()).mul(2).mul(profit).div(profitDenominator);
     }
 
     function CountBond(address bonder)  public view returns (uint256){
@@ -171,16 +152,6 @@ contract SimpleTimelock {
 
     function GetBondInfo(uint256 index)  public view returns (uint256){
         return bondHolders[msg.sender].at(index);
-    }
-
-    function claim(uint256 index) public noReentrant {
-
-        if( bondData[bondHolders[msg.sender].at(index)].releaseTimeStamp >= block.timestamp)
-        {
-            bep20Token.transferFrom(address(this), msg.sender,bondData[bondHolders[msg.sender].at(0)].amount);
-            bondHolders[msg.sender].remove(index);
-        }
-
     }
 
     function transferAccidentallyLockedTokens(IERC20 token, uint256 amount) public onlyOwner noReentrant {
