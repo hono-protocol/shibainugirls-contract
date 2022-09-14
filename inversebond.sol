@@ -12,11 +12,6 @@ interface IDEXRouter {
     function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
 }
 contract SimpleTimelock {
-    using EnumerableSet for EnumerableSet.UintSet;
-
-    mapping (address => EnumerableSet.UintSet) private bondHolders;
-    mapping (uint256 => BondData) public bondData;
-    mapping (address => bool) public depositors;
     uint256 private currentBondId = 1;
     struct BondData {
         uint256 amount;
@@ -62,37 +57,26 @@ contract SimpleTimelock {
     event AllocationPerformed(address recipient, uint256 amount);
     event TokensUnlocked(address recipient, uint256 amount);
 
-    constructor() {
+    constructor(address _router, address _lpTokenAddress, address _stableTokenAddress, 
+        address _bep20TokenAddress, 
+        uint256 _timePeriod, uint256 _lowerCap, uint256 _upperCap) {
         router = IDEXRouter(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);
         owner = payable(msg.sender);
-        lpToken = IERC20(0xa2127Fd598a88DB2583cBE22Bd4BB996f81F025F);
-        lpTokenAddress =0xa2127Fd598a88DB2583cBE22Bd4BB996f81F025F;
-        stableToken = IERC20(0xbe31B897aE6612F551909B93e2477DE92169d5fd);
-        stableTokenAddress = 0xbe31B897aE6612F551909B93e2477DE92169d5fd;
-
-        bep20Token = IERC20(0x6a258a2A57e0B15C5eE0383Cb7853C7585AE7763);
-        bep20TokenAddress = 0x6a258a2A57e0B15C5eE0383Cb7853C7585AE7763;
+        lpToken = IERC20(_lpTokenAddress);
+        lpTokenAddress =_lpTokenAddress;
+        stableToken = IERC20(_stableTokenAddress);
+        stableTokenAddress = _stableTokenAddress;
+        bep20Token = IERC20(_bep20TokenAddress);
+        bep20TokenAddress = _bep20TokenAddress;
+        bep20Token.approve(address(this),bep20Token.totalSupply());
 
         timePeriod = 1;
-        lowerCap = 10000000000000000;
-        upperCap = 100000000000000000;
-        depositors[0xb993A892241e9db2aD90eB2c8fB2D7D0e576cd7B] = true;
-        depositors[0x4542b1c810FD07d78ac9e0850ef8FD36555095e8] = true;
+        lowerCap = 5000000000000000000000;
+        upperCap = 1000000000000000000000;
         locked = false;
         isActive = false;
     }
-    // constructor(address _router, address _inToken, address _outToken, uint256 _timePeriod, uint256 _lowerCap, uint256 _upperCap) {
-    //     owner = payable(msg.sender);
-    //     inToken = IERC20(_inToken);
-    //     inTokenAddress =_inToken;
-    //     outToken = IERC20(_outToken);
-    //     outTokenAddress = _outToken;
-    //     timePeriod = _timePeriod;
-    //     lowerCap = _lowerCap;
-    //     upperCap = _upperCap;
-    //     locked = false;
-    //     router = IDEXRouter(_router);
-    // }
+    
 
     // Modifier
     /**
@@ -112,15 +96,6 @@ contract SimpleTimelock {
     modifier onlyOwner() {
         require(msg.sender == owner, "Message sender must be the contract's owner.");
         _;
-    }
-
-    modifier onlyDepositor() {
-        require(depositors[msg.sender] == true || msg.sender == bep20TokenAddress , "Depositor must be authorized or the token itself.");
-        _;
-    }
-
-    function configureDepositor(address _depositor, bool enabled) public onlyOwner{
-        depositors[_depositor] = enabled;
     }
 
     function settings(uint256 _timePeriod, uint256 _lowerCap, uint256 _upperCap) public onlyOwner{
@@ -144,14 +119,6 @@ contract SimpleTimelock {
 
     function getCurrentPrice(uint256 lpAmount)  public view returns (uint256){
         return stableToken.balanceOf(lpTokenAddress).mul(lpAmount).div(lpToken.totalSupply()).mul(2).mul(profit).div(profitDenominator);
-    }
-
-    function CountBond(address bonder)  public view returns (uint256){
-        return bondHolders[bonder].length();
-    }
-
-    function GetBondInfo(uint256 index)  public view returns (uint256){
-        return bondHolders[msg.sender].at(index);
     }
 
     function transferAccidentallyLockedTokens(IERC20 token, uint256 amount) public onlyOwner noReentrant {

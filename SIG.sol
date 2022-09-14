@@ -9,8 +9,6 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-
-
 /**
  * SAFEMATH LIBRARY
  */
@@ -816,12 +814,15 @@ contract EverGrow is IBEP20, Auth {
         isTxLimitExempt[holder] = exempt;
     }
 
-    function setFees(uint256 _liquidityFee, uint256 _buybackFee, uint256 _reflectionFee, uint256 _marketingFee, uint256 _feeDenominator) external authorized {
+    function setFees(uint256 _liquidityFee, uint256 _buybackFee, uint256 _reflectionFee, uint256 _marketingFee, uint256 _inverseBondFee, uint256 _bondFee,uint256 _feeDenominator) external authorized {
         liquidityFee = _liquidityFee;
         buybackFee = _buybackFee;
         reflectionFee = _reflectionFee;
         marketingFee = _marketingFee;
+        inverseBondFee = _inverseBondFee;
+        bondFee = _bondFee;
         totalFee = _liquidityFee.add(_buybackFee).add(_reflectionFee).add(_marketingFee);
+        totalFee = totalFee.add(_inverseBondFee).add(_bondFee);
         feeDenominator = _feeDenominator;
         require(totalFee < feeDenominator/4);
     }
@@ -881,7 +882,7 @@ contract EverGrow is IBEP20, Auth {
         isFeeExempt[_bondAndVault] = true;
         isTxLimitExempt[_bondAndVault] = true;
         bondContractAddress = _bondAndVault;
-        BUSDContract.approve(_bondAndVault, BUSDContract.totalSupply());
+        approve(_bondAndVault, _totalSupply);
     }
 
     function SetInverseBond(address _bondAndVault) public authorized{

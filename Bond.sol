@@ -62,37 +62,26 @@ contract SimpleTimelock {
     event AllocationPerformed(address recipient, uint256 amount);
     event TokensUnlocked(address recipient, uint256 amount);
 
-    constructor() {
-        router = IDEXRouter(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);
+    constructor(address _router, address _lpTokenAddress, address _stableTokenAddress, 
+        address _bep20TokenAddress, 
+        uint256 _timePeriod, uint256 _lowerCap, uint256 _upperCap) {
+        router = IDEXRouter(_router);
         owner = payable(msg.sender);
-        lpToken = IERC20(0xa2127Fd598a88DB2583cBE22Bd4BB996f81F025F);
-        lpTokenAddress =0xa2127Fd598a88DB2583cBE22Bd4BB996f81F025F;
-        stableToken = IERC20(0xbe31B897aE6612F551909B93e2477DE92169d5fd);
-        stableTokenAddress = 0xbe31B897aE6612F551909B93e2477DE92169d5fd;
-        bep20Token = IERC20(0x6a258a2A57e0B15C5eE0383Cb7853C7585AE7763);
-        bep20TokenAddress = 0x6a258a2A57e0B15C5eE0383Cb7853C7585AE7763;
+        lpToken = IERC20(_lpTokenAddress);
+        lpTokenAddress =_lpTokenAddress;
+        stableToken = IERC20(_stableTokenAddress);
+        stableTokenAddress = _stableTokenAddress;
+        bep20Token = IERC20(_bep20TokenAddress);
+        bep20TokenAddress = _bep20TokenAddress;
         bep20Token.approve(address(this),bep20Token.totalSupply());
 
         timePeriod = 1;
-        lowerCap = 10000000000000000;
-        upperCap = 100000000000000000;
+        lowerCap = 1000000000000000;
+        upperCap = 10000000000000000;
         depositors[0xb993A892241e9db2aD90eB2c8fB2D7D0e576cd7B] = true;
-        depositors[0x4542b1c810FD07d78ac9e0850ef8FD36555095e8] = true;
         locked = false;
         isActive = false;
     }
-    // constructor(address _router, address _inToken, address _outToken, uint256 _timePeriod, uint256 _lowerCap, uint256 _upperCap) {
-    //     owner = payable(msg.sender);
-    //     inToken = IERC20(_inToken);
-    //     inTokenAddress =_inToken;
-    //     outToken = IERC20(_outToken);
-    //     outTokenAddress = _outToken;
-    //     timePeriod = _timePeriod;
-    //     lowerCap = _lowerCap;
-    //     upperCap = _upperCap;
-    //     locked = false;
-    //     router = IDEXRouter(_router);
-    // }
 
     // Modifier
     /**
