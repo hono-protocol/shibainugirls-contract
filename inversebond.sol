@@ -11,7 +11,7 @@ import "openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
 interface IDEXRouter {
     function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
 }
-contract SimpleTimelock {
+contract InverseBond {
     uint256 private currentBondId = 1;
     struct BondData {
         uint256 amount;

@@ -442,7 +442,7 @@ contract DividendDistributor is IDividendDistributor {
     }
 }
 
-contract EverGrow is IBEP20, Auth {
+contract SIG is IBEP20, Auth {
     using SafeMath for uint256;
 
     uint256 public constant MASK = type(uint128).max;
