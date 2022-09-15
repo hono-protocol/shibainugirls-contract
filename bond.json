@@ -1,42 +1,6 @@
 [
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_router",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "_lpTokenAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "_stableTokenAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "_bep20TokenAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_timePeriod",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_lowerCap",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_upperCap",
-				"type": "uint256"
-			}
-		],
+		"inputs": [],
 		"stateMutability": "nonpayable",
 		"type": "constructor"
 	},
@@ -166,7 +130,7 @@
 		"name": "bep20Token",
 		"outputs": [
 			{
-				"internalType": "contract IERC20",
+				"internalType": "contract IBEP20",
 				"name": "",
 				"type": "address"
 			}
@@ -259,7 +223,7 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "amount",
+				"name": "depositAmmount",
 				"type": "uint256"
 			}
 		],
@@ -307,6 +271,25 @@
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "getReversePrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "isActive",
 		"outputs": [
@@ -337,7 +320,7 @@
 		"name": "lpToken",
 		"outputs": [
 			{
-				"internalType": "contract IERC20",
+				"internalType": "contract IBEP20",
 				"name": "",
 				"type": "address"
 			}
@@ -353,6 +336,19 @@
 				"internalType": "address",
 				"name": "",
 				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "maxCanTrade",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -412,7 +408,7 @@
 		"name": "stableToken",
 		"outputs": [
 			{
-				"internalType": "contract IERC20",
+				"internalType": "contract IBEP20",
 				"name": "",
 				"type": "address"
 			}
@@ -449,7 +445,7 @@
 	{
 		"inputs": [
 			{
-				"internalType": "contract IERC20",
+				"internalType": "contract IBEP20",
 				"name": "token",
 				"type": "address"
 			},
