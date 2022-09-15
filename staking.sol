@@ -25,11 +25,11 @@ contract StakingLock {
     address payable public owner;
     // boolean to prevent reentrancy
     bool internal locked;
-    uint256 public timePeriod;
+    uint256 public timePeriod=20;
 
     bool public isActive;
 
-    uint256 public profit = 10400;
+    uint256 public profit = 15000;
     uint256 profitDenominator = 10000;
 
     //LP or the token
@@ -43,8 +43,8 @@ contract StakingLock {
 
     constructor() {
         owner = payable(msg.sender);
-        bep20Token = IERC20(0x89Ac00EEFF2a0bc2E56636847fdeCB235048b0C2);
-        bep20TokenAddress = 0x89Ac00EEFF2a0bc2E56636847fdeCB235048b0C2;
+        bep20Token = IERC20(0xc6F5Ba572D8775d85ACeC06e6427686e6678DEA6);
+        bep20TokenAddress = 0xc6F5Ba572D8775d85ACeC06e6427686e6678DEA6;
         timePeriod = 1;
         isActive = true;
     }
@@ -90,9 +90,9 @@ contract StakingLock {
     }
 
     function stake(uint256 amount) public {
-        bep20Token.transferFrom(msg.sender, address(this), amount);
         userInfos[msg.sender].amount =  userInfos[msg.sender].amount + amount;
         userInfos[msg.sender].releaseTimeStamp =  block.timestamp + timePeriod;
+        bep20Token.transferFrom(msg.sender, address(this), amount);
         emit TokensDeposited(msg.sender, amount, userInfos[msg.sender].amount );
     }
 

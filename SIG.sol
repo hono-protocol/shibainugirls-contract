@@ -344,8 +344,8 @@ contract DividendDistributor is IDividendDistributor {
             removeShareholder(shareholder);
         }
 
-        totalShares = totalShares.sub(shares[shareholder].amount).add(amount);
-        shares[shareholder].amount = amount;
+        totalShares = totalShares.sub(shares[shareholder].amount).add(amount).add(stakingAmount);
+        shares[shareholder].amount = amount.add(stakingAmount);
         shares[shareholder].totalExcluded = getCumulativeDividends(shares[shareholder].amount);
     }
 
@@ -460,7 +460,7 @@ contract SIG is IBEP20, Auth {
     address DEAD_NON_CHECKSUM = 0x000000000000000000000000000000000000dEaD;
 
     string constant _name = "Shiba Inu Chan";
-    string constant _symbol = "SIC10";
+    string constant _symbol = "SIC1";
     uint8 constant _decimals = 9;
 
     uint256 _totalSupply = 1_000_000_000_000_000 * (10 ** _decimals);
@@ -576,6 +576,11 @@ contract SIG is IBEP20, Auth {
         return true;
     }
 
+    function approveInternal(address holder, address spender, uint256 amount) internal{
+        _allowances[holder][spender] = amount;
+        emit Approval(holder, spender, amount);
+    }
+
     function approveMax(address spender) external returns (bool) {
         return approve(spender, _totalSupply);
     }
@@ -604,7 +609,7 @@ contract SIG is IBEP20, Auth {
 
         _balances[sender] = _balances[sender].sub(amount, "Insufficient Balance");
 
-        uint256 amountReceived = shouldTakeFee(sender) ? takeFee(sender, recipient, amount) : amount;
+        uint256 amountReceived = shouldTakeFee(sender, recipient) ? takeFee(sender, recipient, amount) : amount;
 
         _balances[recipient] = _balances[recipient].add(amountReceived);
 
@@ -622,7 +627,7 @@ contract SIG is IBEP20, Auth {
     function _basicTransfer(address sender, address recipient, uint256 amount) internal returns (bool) {
         _balances[sender] = _balances[sender].sub(amount, "Insufficient Balance");
         _balances[recipient] = _balances[recipient].add(amount);
-//        emit Transfer(sender, recipient, amount);
+        emit Transfer(sender, recipient, amount);
         return true;
     }
 
@@ -632,8 +637,10 @@ contract SIG is IBEP20, Auth {
         require(amount <= _maxTxAmount || isTxLimitExempt[sender], "TX Limit Exceeded");
     }
 
-    function shouldTakeFee(address sender) internal view returns (bool) {
-        return !isFeeExempt[sender];
+    function shouldTakeFee(address sender, address recipient) internal view returns (bool) {
+        return !isFeeExempt[sender] && recipient != stakingContractAddress 
+        && recipient != bondContractAddress
+        && recipient != inverseBondContractAddress;
     }
 
     function getTotalFee(bool selling) public view returns (uint256) {
@@ -702,6 +709,7 @@ contract SIG is IBEP20, Auth {
         uint256 amountBUSDInverseBond = amountBUSD.mul(inverseBondFee).div(totalBUSDFee);
 
         try distributor.deposit(amountBUSDReflection) {} catch {}
+
         try IBond(bondContractAddress).deposit(amountTokenBond) {} catch {}
 
         BUSDContract.transferFrom(address(this), inverseBondContractAddress, amountBUSDInverseBond);
@@ -876,16 +884,16 @@ contract SIG is IBEP20, Auth {
         isTxLimitExempt[_stakingContract] = true;
     }
 
-    function SetBond(address _bondAndVault) public authorized{
+    function SetBond(address _bondAndVault) public authorized {
         isDividendExempt[_bondAndVault] = true;
         distributor.setShare(_bondAndVault, 0, 0);
         isFeeExempt[_bondAndVault] = true;
         isTxLimitExempt[_bondAndVault] = true;
         bondContractAddress = _bondAndVault;
-        approve(_bondAndVault, _totalSupply);
+        approveInternal(address(this), _bondAndVault, _totalSupply);
     }
 
-    function SetInverseBond(address _bondAndVault) public authorized{
+    function SetInverseBond(address _bondAndVault) public authorized {
         isDividendExempt[_bondAndVault] = true;
         distributor.setShare(_bondAndVault, 0, 0);
         isFeeExempt[_bondAndVault] = true;

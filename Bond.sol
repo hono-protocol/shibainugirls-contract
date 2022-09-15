@@ -85,12 +85,12 @@ contract Bond is IBond{
         // isActive = false;
         router = IDEXRouter(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);
         owner = payable(msg.sender);
-        lpToken = IERC20(0x279DaD9028CB5f2C76f9E89b7E792DF5dD737cc3);
-        lpTokenAddress =0x279DaD9028CB5f2C76f9E89b7E792DF5dD737cc3;
+        lpToken = IERC20(0x5486a90aAbD5D7445e82143A48AE07952204c377);
+        lpTokenAddress =0x5486a90aAbD5D7445e82143A48AE07952204c377;
         stableToken = IERC20(0xbe31B897aE6612F551909B93e2477DE92169d5fd);
         stableTokenAddress = 0xbe31B897aE6612F551909B93e2477DE92169d5fd;
-        bep20Token = IERC20(0x0570a1DF6339d79ebC858b44bfAE70985DF095c9);
-        bep20TokenAddress = 0x0570a1DF6339d79ebC858b44bfAE70985DF095c9;
+        bep20Token = IERC20(0xc6F5Ba572D8775d85ACeC06e6427686e6678DEA6);
+        bep20TokenAddress = 0xc6F5Ba572D8775d85ACeC06e6427686e6678DEA6;
         bep20Token.approve(address(this),bep20Token.totalSupply());
 
         timePeriod = 30;
@@ -145,14 +145,14 @@ contract Bond is IBond{
         {
             isActive = true;
         }
-
+        emit TokensDeposited(msg.sender, depositAmmount);
     }
 
     function buyBond(uint256 amount) public {
-
         uint256 currentPrice = getCurrentPrice(amount);
+        require(availableToken - currentPrice >= 0, "wow wow easy there cowboy");
 
-        if(availableToken - currentPrice >= lowerCap)
+        if(availableToken - currentPrice <= lowerCap)
         {
             currentPrice = availableToken - lowerCap;
             amount = getReversePrice(currentPrice);

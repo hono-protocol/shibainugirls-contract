@@ -58,8 +58,8 @@ contract InverseBond {
         owner = payable(msg.sender);
         stableToken = IERC20(0xbe31B897aE6612F551909B93e2477DE92169d5fd);
         stableTokenAddress = 0xbe31B897aE6612F551909B93e2477DE92169d5fd;
-        bep20Token = IERC20(0x0570a1DF6339d79ebC858b44bfAE70985DF095c9);
-        bep20TokenAddress = 0x0570a1DF6339d79ebC858b44bfAE70985DF095c9;
+        bep20Token = IERC20(0xc6F5Ba572D8775d85ACeC06e6427686e6678DEA6);
+        bep20TokenAddress = 0xc6F5Ba572D8775d85ACeC06e6427686e6678DEA6;
         bep20Token.approve(address(this),bep20Token.totalSupply());
         stableToken.approve(address(this),stableToken.totalSupply());
 
@@ -115,13 +115,14 @@ contract InverseBond {
     }
 
     function sellBond(uint256 amount) public {
-        require(amount >= 0, "really mate!");
         if(stableToken.balanceOf(address(this)) >= upperCap)
         {
             isActive = true;
         }
 
         uint256 currentPrice = getCurrentPrice(amount);
+        require(stableToken.balanceOf(address(this)) - currentPrice  >= 0, "really mate!");
+
         if(stableToken.balanceOf(address(this)) - currentPrice <= lowerCap)
         {
             amount = getTokenFromStableAmount(stableToken.balanceOf(address(this))-lowerCap);
