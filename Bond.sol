@@ -11,7 +11,10 @@ import "openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
 interface IDEXRouter {
     function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
 }
-contract Bond {
+interface IBond {
+    function deposit(uint256 depositAmmount) external;
+}
+contract Bond is IBond{
     using EnumerableSet for EnumerableSet.UintSet;
 
     mapping (address => EnumerableSet.UintSet) private bondHolders;
@@ -42,7 +45,7 @@ contract Bond {
 
     bool public isActive;
 
-    uint256 public profit = 10400;
+    uint256 public profit = 15000;
     uint256 public availableToken = 0;
     uint256 profitDenominator = 10000;
     // for bond it is the LP
@@ -62,25 +65,41 @@ contract Bond {
     event AllocationPerformed(address recipient, uint256 amount);
     event TokensUnlocked(address recipient, uint256 amount);
 
-    constructor(address _router, address _lpTokenAddress, address _stableTokenAddress, 
-        address _bep20TokenAddress, 
-        uint256 _timePeriod, uint256 _lowerCap, uint256 _upperCap) {
-        router = IDEXRouter(_router);
+    //constructor(address _router, address _lpTokenAddress, address _stableTokenAddress, address _bep20TokenAddress) {
+    constructor() {
+        // router = IDEXRouter(_router);
+        // owner = payable(msg.sender);
+        // lpToken = IERC20(_lpTokenAddress);
+        // lpTokenAddress =_lpTokenAddress;
+        // stableToken = IERC20(_stableTokenAddress);
+        // stableTokenAddress = _stableTokenAddress;
+        // bep20Token = IERC20(_bep20TokenAddress);
+        // bep20TokenAddress = _bep20TokenAddress;
+        // bep20Token.approve(address(this),bep20Token.totalSupply());
+
+        // timePeriod = 30;
+        // lowerCap = 1000000000000000;
+        // upperCap = 10000000000000000;
+        // depositors[0xb993A892241e9db2aD90eB2c8fB2D7D0e576cd7B] = true;
+        // locked = false;
+        // isActive = false;
+        router = IDEXRouter(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);
         owner = payable(msg.sender);
-        lpToken = IERC20(_lpTokenAddress);
-        lpTokenAddress =_lpTokenAddress;
-        stableToken = IERC20(_stableTokenAddress);
-        stableTokenAddress = _stableTokenAddress;
-        bep20Token = IERC20(_bep20TokenAddress);
-        bep20TokenAddress = _bep20TokenAddress;
+        lpToken = IERC20(0x279DaD9028CB5f2C76f9E89b7E792DF5dD737cc3);
+        lpTokenAddress =0x279DaD9028CB5f2C76f9E89b7E792DF5dD737cc3;
+        stableToken = IERC20(0xbe31B897aE6612F551909B93e2477DE92169d5fd);
+        stableTokenAddress = 0xbe31B897aE6612F551909B93e2477DE92169d5fd;
+        bep20Token = IERC20(0x0570a1DF6339d79ebC858b44bfAE70985DF095c9);
+        bep20TokenAddress = 0x0570a1DF6339d79ebC858b44bfAE70985DF095c9;
         bep20Token.approve(address(this),bep20Token.totalSupply());
 
-        timePeriod = 1;
+        timePeriod = 30;
         lowerCap = 1000000000000000;
         upperCap = 10000000000000000;
         depositors[0xb993A892241e9db2aD90eB2c8fB2D7D0e576cd7B] = true;
         locked = false;
         isActive = false;
+
     }
 
     // Modifier
@@ -118,10 +137,10 @@ contract Bond {
         upperCap = _upperCap;
     }
 
-    function deposit(uint256 amount) external onlyDepositor{
+    function deposit(uint256 depositAmmount) external onlyDepositor{
 
-        bep20Token.transferFrom(msg.sender, address(this), amount);
-        availableToken = availableToken + amount;
+        bep20Token.transferFrom(msg.sender, address(this), depositAmmount);
+        availableToken = availableToken + depositAmmount;
         if(availableToken >= upperCap)
         {
             isActive = true;
@@ -132,7 +151,15 @@ contract Bond {
     function buyBond(uint256 amount) public {
 
         uint256 currentPrice = getCurrentPrice(amount);
+
+        if(availableToken - currentPrice >= lowerCap)
+        {
+            currentPrice = availableToken - lowerCap;
+            amount = getReversePrice(currentPrice);
+        }
+
         require(availableToken - currentPrice >= 0 && isActive, "Not enough token to sell");
+
         
         bondData[currentBondId].amount = currentPrice;
 
@@ -149,6 +176,10 @@ contract Bond {
             isActive = false;
         }
     }
+    
+    function getReversePrice(uint256 tokenAmount)  public view returns (uint256){
+        return lpToken.totalSupply().mul(tokenAmount).div(bep20Token.balanceOf(lpTokenAddress)).div(2).div(profit).mul(profitDenominator);
+    }
 
     function getCurrentPrice(uint256 lpAmount)  public view returns (uint256){
         return bep20Token.balanceOf(lpTokenAddress).mul(lpAmount).div(lpToken.totalSupply()).mul(2).mul(profit).div(profitDenominator);
@@ -164,10 +195,10 @@ contract Bond {
 
     function claim(uint256 index) public noReentrant {
 
-        if( bondData[bondHolders[msg.sender].at(index)].releaseTimeStamp >= block.timestamp)
+        if( bondData[bondHolders[msg.sender].at(index)].releaseTimeStamp < block.timestamp)
         {
-            bep20Token.transferFrom(address(this), msg.sender,bondData[bondHolders[msg.sender].at(0)].amount);
-            bondHolders[msg.sender].remove(index);
+            bep20Token.transferFrom(address(this), msg.sender,bondData[bondHolders[msg.sender].at(index)].amount);
+            bondHolders[msg.sender].remove(bondHolders[msg.sender].at(index));
         }
 
     }
