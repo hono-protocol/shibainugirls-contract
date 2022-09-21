@@ -548,4 +548,4 @@ contract StakingLock {
         require(amount <= address(this).balance, "Insufficient funds");
         owner.transfer(amount);
     }
-}
+}   
