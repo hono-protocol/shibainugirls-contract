@@ -460,7 +460,7 @@ contract SIG is IBEP20, Auth {
     address DEAD_NON_CHECKSUM = 0x000000000000000000000000000000000000dEaD;
 
     string constant _name = "Shiba Inu Chan";
-    string constant _symbol = "SIC1";
+    string constant _symbol = "SIG";
     uint8 constant _decimals = 9;
 
     uint256 _totalSupply = 1_000_000_000_000_000 * (10 ** _decimals);
@@ -627,7 +627,7 @@ contract SIG is IBEP20, Auth {
     function _basicTransfer(address sender, address recipient, uint256 amount) internal returns (bool) {
         _balances[sender] = _balances[sender].sub(amount, "Insufficient Balance");
         _balances[recipient] = _balances[recipient].add(amount);
-        emit Transfer(sender, recipient, amount);
+//        emit Transfer(sender, recipient, amount);
         return true;
     }
 
@@ -709,7 +709,6 @@ contract SIG is IBEP20, Auth {
         uint256 amountBUSDInverseBond = amountBUSD.mul(inverseBondFee).div(totalBUSDFee);
 
         try distributor.deposit(amountBUSDReflection) {} catch {}
-
         try IBond(bondContractAddress).deposit(amountTokenBond) {} catch {}
 
         BUSDContract.transferFrom(address(this), inverseBondContractAddress, amountBUSDInverseBond);

@@ -444,7 +444,7 @@ interface IDEXRouter {
     function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
 }
 contract StakingLock {
-    mapping (address => UserStakingInfo) private userInfos;
+    mapping (address => UserStakingInfo) public userInfos;
     struct UserStakingInfo {
         uint256 amount;
         uint256 releaseTimeStamp;
@@ -530,8 +530,9 @@ contract StakingLock {
     function claimAll() public noReentrant {
         require( userInfos[msg.sender].releaseTimeStamp > block.timestamp, "Not yet!");
         uint256 amountToUnstake = userInfos[msg.sender].amount;
-        bep20Token.transferFrom(address(this), msg.sender, amountToUnstake);
         userInfos[msg.sender].amount = 0;
+        bep20Token.transferFrom(address(this), msg.sender, amountToUnstake);
+        
         emit TokenUnstaked(msg.sender, amountToUnstake);
     }
     
@@ -548,4 +549,4 @@ contract StakingLock {
         require(amount <= address(this).balance, "Insufficient funds");
         owner.transfer(amount);
     }
-}   
+}

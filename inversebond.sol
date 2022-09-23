@@ -465,7 +465,7 @@ contract InverseBond {
     uint256 public lowerCap;
     uint256 public upperCap;
 
-    bool public isActive;
+    bool private isActive;
 
     uint256 public profit = 15000;
     uint256 public availableToken = 0;
@@ -538,6 +538,15 @@ contract InverseBond {
         _;
     }
 
+    function _isActive() external view returns (bool)  {
+        if(!isActive)
+        {
+            return (stableToken.balanceOf(address(this)) >= upperCap);
+        }
+
+        return (stableToken.balanceOf(address(this)) >= lowerCap);
+    }
+
     function settings(uint256 _timePeriod, uint256 _lowerCap, uint256 _upperCap) public onlyOwner{
         timePeriod = _timePeriod;
         lowerCap = _lowerCap;
@@ -588,6 +597,10 @@ contract InverseBond {
     }
 
     function getCurrentPrice(uint256 bep20Amount)  public view returns (uint256){
+        if(bep20Amount <= 0 )
+        {
+            return 0;
+        }
         address[] memory path = new address[](2);
         //path[0] = WBNB;
         path[0] = bep20TokenAddress;
