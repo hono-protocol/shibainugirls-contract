@@ -1,91 +1,4 @@
-// SPDX-License-Identifier: MIT
-
-pragma solidity 0.6.12;
-
-library SafeMath {
-    
-    function tryAdd(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            uint256 c = a + b;
-            if (c < a) return (false, 0);
-            return (true, c);
-        }
-    }
-
-    function trySub(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            if (b > a) return (false, 0);
-            return (true, a - b);
-        }
-    }
-
-    function tryMul(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
-            // benefit is lost if 'b' is also tested.
-            // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
-            if (a == 0) return (true, 0);
-            uint256 c = a * b;
-            if (c / a != b) return (false, 0);
-            return (true, c);
-        }
-    }
-
-    function tryDiv(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            if (b == 0) return (false, 0);
-            return (true, a / b);
-        }
-    }
-
-    function tryMod(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            if (b == 0) return (false, 0);
-            return (true, a % b);
-        }
-    }
-
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a + b;
-    }
-
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a - b;
-    }
-
-    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a * b;
-    }
-
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a / b;
-    }
-
-    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a % b;
-    }
-
-    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        unchecked {
-            require(b <= a, errorMessage);
-            return a - b;
-        }
-    }
-
-    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        unchecked {
-            require(b > 0, errorMessage);
-            return a / b;
-        }
-    }
-
-    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        unchecked {
-            require(b > 0, errorMessage);
-            return a % b;
-        }
-    }
-}
+pragma solidity ^0.8.0;
 interface IBEP20 {
     function totalSupply() external view returns (uint256);
     function decimals() external view returns (uint8);
@@ -101,56 +14,41 @@ interface IBEP20 {
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-contract TreasuryVester {
-    using SafeMath for uint;
+contract TimeLockedWallet {
+    address public owner;
+    uint256 public unlockDate;
+    uint256 public createdAt;
 
-    address public bep20Token;
-    address public recipient;
-
-    uint public vestingAmount;
-    uint public vestingBegin;
-    uint public vestingCliff;
-    uint public vestingEnd;
-
-    uint public lastUpdate;
+    modifier onlyOwner {
+        require(msg.sender == owner);
+        _;
+    }
 
     constructor(
-        address bep20Token_,
-        address recipient_,
-        uint256 vestingAmount_,
-        uint256 vestingBegin_,
-        uint256 vestingCliff_,
-        uint256 vestingEnd_
+        uint256 _unlockPeriod
     ) public {
-        require(vestingBegin_ >= block.timestamp, 'TreasuryVester::constructor: vesting begin too early');
-        require(vestingCliff_ >= vestingBegin_, 'TreasuryVester::constructor: cliff is too early');
-        require(vestingEnd_ > vestingCliff_, 'TreasuryVester::constructor: end is too early');
-
-        bep20Token = bep20Token_;
-        recipient = recipient_;
-
-        vestingAmount = vestingAmount_;
-        vestingBegin = vestingBegin_;
-        vestingCliff = vestingCliff_;
-        vestingEnd = vestingEnd_;
-
-        lastUpdate = vestingBegin;
+        owner = msg.sender;
+        unlockDate = block.timestamp + _unlockPeriod;
+        createdAt = block.timestamp;
     }
 
-    function setRecipient(address recipient_) public {
-        require(msg.sender == recipient, 'TreasuryVester::setRecipient: unauthorized');
-        recipient = recipient_;
+    // callable by owner only, after specified time, only for Tokens implementing ERC20
+    function withdrawTokens(address _tokenContract) onlyOwner public {
+       require(block.timestamp >= unlockDate, "Not yet!");
+     
+       //now send all the token balance
+       uint256 tokenBalance = IBEP20(_tokenContract).balanceOf(address(this));
+       IBEP20(_tokenContract).transfer(owner, tokenBalance);
+       emit WithdrewTokens(_tokenContract, msg.sender, tokenBalance);
+    }
+    function changeOwner(address _newOwner) onlyOwner public {
+      owner = _newOwner;
+    }
+    function info(address _tokenContract) public view returns( address, uint256, uint256, uint256) {
+        return (owner, unlockDate, createdAt, IBEP20(_tokenContract).balanceOf(address(this)));
     }
 
-    function claim() public {
-        require(block.timestamp >= vestingCliff, 'TreasuryVester::claim: not time yet');
-        uint amount;
-        if (block.timestamp >= vestingEnd) {
-            amount = IBEP20(bep20Token).balanceOf(address(this));
-        } else {
-            amount = vestingAmount.mul(block.timestamp - lastUpdate).div(vestingEnd - vestingBegin);
-            lastUpdate = block.timestamp;
-        }
-        IBEP20(bep20Token).transfer(recipient, amount);
-    }
+    event Received(address from, uint256 amount);
+    event Withdrew(address to, uint256 amount);
+    event WithdrewTokens(address tokenContract, address to, uint256 amount);
 }

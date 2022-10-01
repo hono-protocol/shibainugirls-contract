@@ -364,6 +364,8 @@ interface IUniswapV2Pair {
 }
 interface IDEXRouter {
     function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
+    function getAmountsIn(uint amountOut, address[] calldata path) external view returns (uint[] memory amounts);
+
 }
 interface IBond {
     function deposit(uint256 depositAmmount) external;
@@ -384,7 +386,6 @@ library SafeMath {
             return (true, a - b);
         }
     }
-
     function tryMul(uint256 a, uint256 b) internal pure returns (bool, uint256) {
         unchecked {
             // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
@@ -484,14 +485,12 @@ contract Bond is IBond{
     IDEXRouter router;
     // Contract owner
     address payable public owner;
+    address public vault;
 
     // Contract owner access
     bool public allIncomingDepositsFinalised;
 
-    uint256 public lowerCap;
-    uint256 public upperCap;
     uint256 public totalWeight = 0;
-    uint256 public availableToken = 0;
     uint256 profitDenominator = 10000;
 
     //this is what the pairing of our token is
@@ -507,38 +506,17 @@ contract Bond is IBond{
     event AllocationPerformed(address recipient, uint256 amount);
     event TokensUnlocked(address recipient, uint256 amount);
 
-    //constructor(address _router, address _lpTokenAddress, address _stableTokenAddress, address _bep20TokenAddress) {
-    constructor() {
-        // router = IDEXRouter(_router);
-        // owner = payable(msg.sender);
-        // lpToken = IERC20(_lpTokenAddress);
-        // lpTokenAddress =_lpTokenAddress;
-        // stableToken = IERC20(_stableTokenAddress);
-        // stableTokenAddress = _stableTokenAddress;
-        // bep20Token = IERC20(_bep20TokenAddress);
-        // bep20TokenAddress = _bep20TokenAddress;
-        // bep20Token.approve(address(this),bep20Token.totalSupply());
-
-        // timePeriod = 30;
-        // lowerCap = 1000000000000000;
-        // upperCap = 10000000000000000;
-        // depositors[0xb993A892241e9db2aD90eB2c8fB2D7D0e576cd7B] = true;
-        // locked = false;
-        // isActive = false;
-        router = IDEXRouter(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);
+    constructor(address _router, address _stableTokenAddress, address _bep20TokenAddress, address _vault) {
+        router = IDEXRouter(_router);
         owner = payable(msg.sender);
-     
-        stableToken = IBEP20(0xbe31B897aE6612F551909B93e2477DE92169d5fd);
-        stableTokenAddress = 0xbe31B897aE6612F551909B93e2477DE92169d5fd;
-        bep20Token = IBEP20(0x7Ff6a992707FD30223Ea3878143600D8Feb3978e);
-        bep20TokenAddress = 0x7Ff6a992707FD30223Ea3878143600D8Feb3978e;
+        stableToken = IBEP20(_stableTokenAddress);
+        stableTokenAddress = _stableTokenAddress;
+        bep20Token = IBEP20(_bep20TokenAddress);
+        bep20TokenAddress = _bep20TokenAddress;
         bep20Token.approve(address(this),bep20Token.totalSupply());
-
-        lowerCap = 1000000000000000;
-        upperCap = 10000000000000000;
-        depositors[0xb993A892241e9db2aD90eB2c8fB2D7D0e576cd7B] = true;
         locked = false;
-        
+        vault = _vault;
+
     }
 
     // Modifier
@@ -569,7 +547,10 @@ contract Bond is IBond{
     function bondListLength() external view returns (uint256) {
         return bondList.length;
     }
-
+     function addBond(address newVault) public onlyOwner
+     {
+         vault = newVault;
+     }
     function addBond( string memory _name, 
         uint256 _weight, 
         address _lpToken,
@@ -620,21 +601,21 @@ contract Bond is IBond{
     }
 
     function buyBond(uint256 lpAmount, uint256 bondId) public {
+        require( bondList[bondId].isActive && bondList[bondId].sigBalance > bondList[bondId].sigBalanceLowerCap, "Bond have not yet activated");
+
         uint256 sigAmount = LpToSig(bondList[bondId].lpToken, lpAmount).mul(bondList[bondId].premiumPercentage).div(profitDenominator);
-        require(bondList[bondId].sigBalance - sigAmount >= 0, "wow wow easy there cowboy");
 
-        if(bondList[bondId].sigBalance - sigAmount <= lowerCap)
+        if(sigAmount > bondList[bondId].sigBalance || bondList[bondId].sigBalance - sigAmount <= bondList[bondId].sigBalanceLowerCap)
         {
-            sigAmount = availableToken - lowerCap;
-            lpAmount = SIGtoLP(bondList[bondId].lpToken,sigAmount).div(bondList[bondId].premiumPercentage).mul(profitDenominator);
+            sigAmount = bondList[bondId].sigBalance - bondList[bondId].sigBalanceLowerCap;
+            lpAmount = SIGtoLP(bondList[bondId].lpToken,sigAmount).mul(profitDenominator).div(bondList[bondId].premiumPercentage);
         }
-
-        require(bondList[bondId].sigBalance - sigAmount >= 0 && bondList[bondId].isActive, "Not enough token to sell");
 
         
         bondData[currentBondId].amount = sigAmount;
 
-        IBEP20(bondList[bondId].lpToken).transferFrom(msg.sender, address(this), lpAmount);
+        //IBEP20(bondList[bondId].lpToken).transferFrom(msg.sender, address(this), lpAmount);
+        IBEP20(bondList[bondId].lpToken).transferFrom(msg.sender, vault, lpAmount);
 
         bondHolders[msg.sender].add(currentBondId);
 
@@ -644,22 +625,46 @@ contract Bond is IBond{
         currentBondId = currentBondId +1;
         bondList[bondId].sigBalance = bondList[bondId].sigBalance - sigAmount;
 
-        if(bondList[bondId].sigBalance < bondList[bondId].sigBalanceLowerCap)
+        if(bondList[bondId].sigBalance <= bondList[bondId].sigBalanceLowerCap)
         {
             bondList[bondId].isActive = false;
         }
     }
+    function LpToToken(address _pair, uint256 lpAmount) public view returns (uint256) {
+        address otherBep20Token = IUniswapV2Pair(_pair).token0();
+        if(address(otherBep20Token) == address(bep20TokenAddress))
+        {
+            otherBep20Token = IUniswapV2Pair(_pair).token1();
+        }
+        uint256 balanceOfotherBep20Token = IBEP20(otherBep20Token).balanceOf(_pair);
+        uint256 totalLpTokenSupply = IBEP20(_pair).totalSupply();
+        return balanceOfotherBep20Token.mul(2).mul(lpAmount).div(totalLpTokenSupply);
+    }
+
+    function TokenToLP(address _pair, uint256 tokenAmount) public view returns (uint256) {
+        address token0 = IUniswapV2Pair(_pair).token0();
+        if(address(token0) == address(bep20TokenAddress))
+        {
+            token0 = IUniswapV2Pair(_pair).token1();
+        }
+        uint256 totalLPToken = IBEP20(_pair).totalSupply();
+        uint256 balanceOf1 = IBEP20(token0).balanceOf(_pair);
+        return tokenAmount.mul(totalLPToken).div(2).div(balanceOf1);
+    }
 
     //Dont use profit here yet
-    function LpToSig(address _pair, uint256 lpAmount) public view returns (uint256 k_) {
-        address token0 = IUniswapV2Pair(_pair).token0();
-        uint256 balanceOf1 = IBEP20(token0).balanceOf(_pair);
-        address token1 = IUniswapV2Pair(_pair).token1();
-        uint256 lpValueInToken1 = balanceOf1.mul(lpAmount).div( IBEP20(_pair).totalSupply()).mul(2);
+    function LpToSig(address _pair, uint256 lpAmount) public view returns (uint256) {
+        address otherBep20Token = IUniswapV2Pair(_pair).token0();
+        uint256 lpAmountToTokenAmount = LpToToken(_pair,lpAmount);
+        if(address(otherBep20Token) == address(bep20TokenAddress))
+        {
+            otherBep20Token = IUniswapV2Pair(_pair).token1();
+        }
         address[] memory path = new address[](2);
-        path[0] = token0;
-        path[1] = bep20TokenAddress;
-        return IDEXRouter(router).getAmountsOut(lpValueInToken1, path)[1];
+
+        path[0] = bep20TokenAddress;
+        path[1] = otherBep20Token;
+        return IDEXRouter(router).getAmountsIn(lpAmountToTokenAmount, path)[0];
     }
 
     function maxCanTrade(uint256 bondId) public view returns (uint256 k_)
@@ -676,12 +681,16 @@ contract Bond is IBond{
     //Dont use profit here yet
     function SIGtoLP(address _pair, uint256 sigAmount) public view returns (uint256 k_) {
         address token0 = IUniswapV2Pair(_pair).token0();
+        if(address(token0) == address(bep20TokenAddress))
+        {
+            token0 = IUniswapV2Pair(_pair).token1();
+        }
         address[] memory path = new address[](2);
+
         path[0] = bep20TokenAddress;
         path[1] = token0;
         uint256 totalTokenWorth = IDEXRouter(router).getAmountsOut(sigAmount, path)[1];
-        uint256 balanceOf1 = IBEP20(token0).balanceOf(_pair);
-        uint256 lpTokenWorth = balanceOf1.div(totalTokenWorth).mul(IBEP20(_pair).totalSupply()).div(2);
+        return TokenToLP(_pair, totalTokenWorth);
     }
 
     function CountBond(address bonder)  public view returns (uint256){
@@ -696,7 +705,7 @@ contract Bond is IBond{
 
         if( bondData[bondHolders[msg.sender].at(index)].releaseTimeStamp < block.timestamp)
         {
-            bep20Token.transferFrom(address(this), msg.sender,bondData[bondHolders[msg.sender].at(index)].amount);
+            bep20Token.transfer(msg.sender,bondData[bondHolders[msg.sender].at(index)].amount);
             bondHolders[msg.sender].remove(bondHolders[msg.sender].at(index));
         }
 

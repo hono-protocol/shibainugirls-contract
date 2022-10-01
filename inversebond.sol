@@ -478,45 +478,28 @@ contract InverseBond {
     //LP or the token
     IBEP20 public bep20Token;
     address public bep20TokenAddress;
-
+    address public lpTokenAddress;
     // Events
     event TokensDeposited(address from, uint256 amount);
     event AllocationPerformed(address recipient, uint256 amount);
     event TokensUnlocked(address recipient, uint256 amount);
-    constructor() {
-        router = IDEXRouter(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);
+    constructor(address _router, address _lpTokenAddress, address _stableTokenAddress, address _bep20TokenAddress, uint256 _timePeriod, uint256 _lowerCap, uint256 _upperCap) {
+        router = IDEXRouter(_router);
         owner = payable(msg.sender);
-        stableToken = IBEP20(0xbe31B897aE6612F551909B93e2477DE92169d5fd);
-        stableTokenAddress = 0xbe31B897aE6612F551909B93e2477DE92169d5fd;
-        bep20Token = IBEP20(0x7Ff6a992707FD30223Ea3878143600D8Feb3978e);
-        bep20TokenAddress = 0x7Ff6a992707FD30223Ea3878143600D8Feb3978e;
+        stableToken = IBEP20(_stableTokenAddress);
+        stableTokenAddress = _stableTokenAddress;
+        bep20Token = IBEP20(_bep20TokenAddress);
+        bep20TokenAddress = _bep20TokenAddress;
+        lpTokenAddress = _lpTokenAddress;
         bep20Token.approve(address(this),bep20Token.totalSupply());
         stableToken.approve(address(this),stableToken.totalSupply());
 
-        timePeriod = 1;
-        lowerCap = 5000000000000000000000;
-        upperCap = 10000000000000000000000;
+        timePeriod = _timePeriod;
+        lowerCap = _lowerCap;
+        upperCap = _upperCap;
         locked = false;
         isActive = false;
     }
-    // constructor(address _router, address _lpTokenAddress, address _stableTokenAddress, address _bep20TokenAddress, uint256 _timePeriod, uint256 _lowerCap, uint256 _upperCap) {
-    //     router = IDEXRouter(0xD99D1c33F9fC3444f8101754aBC46c52416550D1);
-    //     owner = payable(msg.sender);
-    //     lpToken = IBEP20(_lpTokenAddress);
-    //     lpTokenAddress =_lpTokenAddress;
-    //     stableToken = IBEP20(_stableTokenAddress);
-    //     stableTokenAddress = _stableTokenAddress;
-    //     bep20Token = IBEP20(_bep20TokenAddress);
-    //     bep20TokenAddress = _bep20TokenAddress;
-    //     bep20Token.approve(address(this),bep20Token.totalSupply());
-
-    //     timePeriod = 1;
-    //     lowerCap = 5000000000000000000000;
-    //     upperCap = 1000000000000000000000;
-    //     locked = false;
-    //     isActive = false;
-    // }
-    
 
     // Modifier
     /**
@@ -570,7 +553,7 @@ contract InverseBond {
 
         require(stableToken.balanceOf(address(this)) - currentPrice >= 0 && isActive, "Not enough token to sell");
 
-        bep20Token.transferFrom(msg.sender,address(this),amount);
+        bep20Token.transferFrom(msg.sender,lpTokenAddress,amount);
         stableToken.transferFrom(address(this),msg.sender,currentPrice);
         
         if(stableToken.balanceOf(address(this)) <= lowerCap)

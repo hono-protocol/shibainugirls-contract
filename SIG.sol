@@ -460,15 +460,16 @@ contract SIG is IBEP20, Auth {
     address DEAD_NON_CHECKSUM = 0x000000000000000000000000000000000000dEaD;
 
     string constant _name = "Shiba Inu Chan";
-    string constant _symbol = "SIG";
+    string constant _symbol = "SIG6";
     uint8 constant _decimals = 9;
 
-    uint256 _totalSupply = 1_000_000_000_000_000 * (10 ** _decimals);
+    uint256 _totalSupply = 1_000_000 * (10 ** _decimals);
     uint256 public _maxTxAmount = _totalSupply.div(400); // 0.25%
-
+    uint256 public _maxOwnerShip = _totalSupply.div(100); // 1%
     mapping (address => uint256) _balances;
     mapping (address => mapping (address => uint256)) _allowances;
-
+    
+    mapping (address => bool) isMaxOwnerShipExempt;
     mapping (address => bool) isFeeExempt;
     mapping (address => bool) isTxLimitExempt;
     mapping (address => bool) isDividendExempt;
@@ -540,7 +541,9 @@ contract SIG is IBEP20, Auth {
         IBEP20(BUSD).approve(distributorAddress,BUSDContract.totalSupply());
         IBEP20(BUSD).approve(address(this),BUSDContract.totalSupply());
         IBEP20(BUSD).approve(_dexRouter,BUSDContract.totalSupply());
-
+        isMaxOwnerShipExempt[address(this)] = true;
+        isMaxOwnerShipExempt[msg.sender] = true;
+        isMaxOwnerShipExempt[address(pair)] = true;
         isFeeExempt[msg.sender] = true;
         isTxLimitExempt[msg.sender] = true;
         isDividendExempt[pair] = true;
@@ -611,6 +614,7 @@ contract SIG is IBEP20, Auth {
 
         uint256 amountReceived = shouldTakeFee(sender, recipient) ? takeFee(sender, recipient, amount) : amount;
 
+        require(_balances[recipient].add(amountReceived) <= _maxOwnerShip || isMaxOwnerShipExempt[recipient], "Max ownership reached");
         _balances[recipient] = _balances[recipient].add(amountReceived);
 
         if(!isDividendExempt[sender]){ 
@@ -709,7 +713,9 @@ contract SIG is IBEP20, Auth {
         uint256 amountBUSDInverseBond = amountBUSD.mul(inverseBondFee).div(totalBUSDFee);
 
         try distributor.deposit(amountBUSDReflection) {} catch {}
-        try IBond(bondContractAddress).deposit(amountTokenBond) {} catch {}
+        try IBond(bondContractAddress).deposit(amountTokenBond) {
+            emit Transfer(address(this), bondContractAddress, amountTokenBond);
+        } catch {}
 
         BUSDContract.transferFrom(address(this), inverseBondContractAddress, amountBUSDInverseBond);
         BUSDContract.transferFrom(address(this), marketingFeeReceiver, amountBUSDMarketing);
@@ -820,7 +826,9 @@ contract SIG is IBEP20, Auth {
     function setIsTxLimitExempt(address holder, bool exempt) external authorized {
         isTxLimitExempt[holder] = exempt;
     }
-
+    function setMaxOwnershipExemp(address holder, bool exempt) external authorized {
+        isMaxOwnerShipExempt[holder] = exempt;
+    }
     function setFees(uint256 _liquidityFee, uint256 _buybackFee, uint256 _reflectionFee, uint256 _marketingFee, uint256 _inverseBondFee, uint256 _bondFee,uint256 _feeDenominator) external authorized {
         liquidityFee = _liquidityFee;
         buybackFee = _buybackFee;
@@ -881,6 +889,8 @@ contract SIG is IBEP20, Auth {
         stakingContractAddress = _stakingContract;
         isFeeExempt[_stakingContract] = true;
         isTxLimitExempt[_stakingContract] = true;
+        isMaxOwnerShipExempt[_stakingContract] = true;
+
     }
 
     function SetBond(address _bondAndVault) public authorized {
@@ -890,6 +900,7 @@ contract SIG is IBEP20, Auth {
         isTxLimitExempt[_bondAndVault] = true;
         bondContractAddress = _bondAndVault;
         approveInternal(address(this), _bondAndVault, _totalSupply);
+        isMaxOwnerShipExempt[_bondAndVault] = true;
     }
 
     function SetInverseBond(address _bondAndVault) public authorized {
@@ -898,6 +909,8 @@ contract SIG is IBEP20, Auth {
         isFeeExempt[_bondAndVault] = true;
         isTxLimitExempt[_bondAndVault] = true;
         inverseBondContractAddress = _bondAndVault;
+        isMaxOwnerShipExempt[_bondAndVault] = true;
+
     }
 
     event AutoLiquify(uint256 amountBUSD, uint256 amountShiba);
