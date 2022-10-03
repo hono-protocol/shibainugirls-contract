@@ -563,6 +563,10 @@ contract InverseBond {
     }
     function maxCanTrade() public view returns (uint256)
     {
+        if(stableToken.balanceOf(address(this)) < lowerCap)
+        {
+            return 0;
+        }
         uint256 tokenAmount = stableToken.balanceOf(address(this)) - lowerCap; 
         address[] memory path = new address[](2);
         //path[0] = WBNB;

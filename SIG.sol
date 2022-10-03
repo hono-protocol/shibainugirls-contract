@@ -290,7 +290,7 @@ contract DividendDistributor is IDividendDistributor {
         uint256 totalRealised;
     }
 
-    IBEP20 BUSD = IBEP20(0xbe31B897aE6612F551909B93e2477DE92169d5fd);
+    IBEP20 BUSD = IBEP20(0x55d398326f99059fF775485246999027B3197955);
     address WBNB = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
     IDEXRouter router;
     address[] shareholders;
@@ -442,12 +442,12 @@ contract DividendDistributor is IDividendDistributor {
     }
 }
 
-contract SIG is IBEP20, Auth {
+contract INUKO is IBEP20, Auth {
     using SafeMath for uint256;
 
     uint256 public constant MASK = type(uint128).max;
-    address BUSD = 0xbe31B897aE6612F551909B93e2477DE92169d5fd;
-    IBEP20 BUSDContract = IBEP20(0xbe31B897aE6612F551909B93e2477DE92169d5fd);
+    address BUSD = 0x55d398326f99059fF775485246999027B3197955;
+    IBEP20 BUSDContract = IBEP20(0x55d398326f99059fF775485246999027B3197955);
     IStakingContract stakingContract;
 
     address public stakingContractAddress;
@@ -459,11 +459,11 @@ contract SIG is IBEP20, Auth {
     address ZERO = 0x0000000000000000000000000000000000000000;
     address DEAD_NON_CHECKSUM = 0x000000000000000000000000000000000000dEaD;
 
-    string constant _name = "Shiba Inu Chan";
-    string constant _symbol = "SIG6";
-    uint8 constant _decimals = 9;
+    string constant _name = "Inuko Token";
+    string constant _symbol = "INUKO";
+    uint8 constant _decimals = 18;
 
-    uint256 _totalSupply = 1_000_000 * (10 ** _decimals);
+    uint256 _totalSupply = 10_000_000 * (10 ** _decimals);
     uint256 public _maxTxAmount = _totalSupply.div(400); // 0.25%
     uint256 public _maxOwnerShip = _totalSupply.div(100); // 1%
     mapping (address => uint256) _balances;
@@ -474,13 +474,13 @@ contract SIG is IBEP20, Auth {
     mapping (address => bool) isTxLimitExempt;
     mapping (address => bool) isDividendExempt;
 
-    uint256 bondFee = 200;
+    uint256 bondFee = 50;
     uint256 inverseBondFee = 200;
-    uint256 liquidityFee = 200;
-    uint256 buybackFee = 300;
-    uint256 reflectionFee = 800;
-    uint256 marketingFee = 100;
-    uint256 totalFee = 1800;
+    uint256 liquidityFee = 100;
+    uint256 buybackFee = 100;
+    uint256 reflectionFee = 400;
+    uint256 marketingFee = 50;
+    uint256 totalFee = 900;
     uint256 feeDenominator = 10000;
 
     address public autoLiquidityReceiver;
