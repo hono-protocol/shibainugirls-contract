@@ -290,7 +290,7 @@ contract DividendDistributor is IDividendDistributor {
         uint256 totalRealised;
     }
 
-    IBEP20 BUSD = IBEP20(0x55d398326f99059fF775485246999027B3197955);
+    IBEP20 USDT = IBEP20(0x55d398326f99059fF775485246999027B3197955);
     address WBNB = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
     IDEXRouter router;
     address[] shareholders;
@@ -350,18 +350,18 @@ contract DividendDistributor is IDividendDistributor {
     }
 
     function depositFromProxy(address proxy, uint256 depositAmmount) external override onlyToken {
-        uint256 balanceBefore = BUSD.balanceOf(address(this));
-        BUSD.transferFrom(proxy, address(this),depositAmmount);
-        uint256 amount = BUSD.balanceOf(address(this)).sub(balanceBefore);
+        uint256 balanceBefore = USDT.balanceOf(address(this));
+        USDT.transferFrom(proxy, address(this),depositAmmount);
+        uint256 amount = USDT.balanceOf(address(this)).sub(balanceBefore);
 
         totalDividends = totalDividends.add(amount);
         dividendsPerShare = dividendsPerShare.add(dividendsPerShareAccuracyFactor.mul(amount).div(totalShares));
     }
 
     function deposit(uint256 depositAmmount) external override onlyToken {
-        uint256 balanceBefore = BUSD.balanceOf(address(this));
-        BUSD.transferFrom(msg.sender, address(this),depositAmmount);
-        uint256 amount = BUSD.balanceOf(address(this)).sub(balanceBefore);
+        uint256 balanceBefore = USDT.balanceOf(address(this));
+        USDT.transferFrom(msg.sender, address(this),depositAmmount);
+        uint256 amount = USDT.balanceOf(address(this)).sub(balanceBefore);
 
         totalDividends = totalDividends.add(amount);
         dividendsPerShare = dividendsPerShare.add(dividendsPerShareAccuracyFactor.mul(amount).div(totalShares));
@@ -404,7 +404,7 @@ contract DividendDistributor is IDividendDistributor {
         uint256 amount = getUnpaidEarnings(shareholder);
         if(amount > 0){
             totalDistributed = totalDistributed.add(amount);
-            BUSD.transfer(shareholder, amount);
+            USDT.transfer(shareholder, amount);
             shareholderClaims[shareholder] = block.timestamp;
             shares[shareholder].totalRealised = shares[shareholder].totalRealised.add(amount);
             shares[shareholder].totalExcluded = getCumulativeDividends(shares[shareholder].amount);
@@ -446,8 +446,8 @@ contract INUKO is IBEP20, Auth {
     using SafeMath for uint256;
 
     uint256 public constant MASK = type(uint128).max;
-    address BUSD = 0x55d398326f99059fF775485246999027B3197955;
-    IBEP20 BUSDContract = IBEP20(0x55d398326f99059fF775485246999027B3197955);
+    address USDT = 0x55d398326f99059fF775485246999027B3197955;
+    IBEP20 USDTContract = IBEP20(0x55d398326f99059fF775485246999027B3197955);
     IStakingContract stakingContract;
 
     address public stakingContractAddress;
@@ -526,7 +526,7 @@ contract INUKO is IBEP20, Auth {
     ) Auth(msg.sender) {
         router = IDEXRouter(_dexRouter);
         //pair = IDEXFactory(router.factory()).createPair(WBNB, address(this));
-        pair = IDEXFactory(router.factory()).createPair(BUSD, address(this));
+        pair = IDEXFactory(router.factory()).createPair(USDT, address(this));
 
         _allowances[address(this)][address(router)] = _totalSupply;
         WBNB = router.WETH();
@@ -535,12 +535,12 @@ contract INUKO is IBEP20, Auth {
         reflectionProxyContract = new ReflectionProxyContract();
         distributorAddress = address(distributor);
         reflectionProxyContractAddress = address(reflectionProxyContract);
-        reflectionProxyContract.approveProxy(BUSD,distributorAddress,BUSDContract.totalSupply());
-        reflectionProxyContract.approveProxy(BUSD,address(this),BUSDContract.totalSupply());
+        reflectionProxyContract.approveProxy(USDT,distributorAddress,USDTContract.totalSupply());
+        reflectionProxyContract.approveProxy(USDT,address(this),USDTContract.totalSupply());
         
-        IBEP20(BUSD).approve(distributorAddress,BUSDContract.totalSupply());
-        IBEP20(BUSD).approve(address(this),BUSDContract.totalSupply());
-        IBEP20(BUSD).approve(_dexRouter,BUSDContract.totalSupply());
+        IBEP20(USDT).approve(distributorAddress,USDTContract.totalSupply());
+        IBEP20(USDT).approve(address(this),USDTContract.totalSupply());
+        IBEP20(USDT).approve(_dexRouter,USDTContract.totalSupply());
         isMaxOwnerShipExempt[address(this)] = true;
         isMaxOwnerShipExempt[msg.sender] = true;
         isMaxOwnerShipExempt[address(pair)] = true;
@@ -689,9 +689,9 @@ contract INUKO is IBEP20, Auth {
 
         address[] memory path = new address[](2);
         path[0] = address(this);
-        path[1] = BUSD;
+        path[1] = USDT;
 
-        uint256 balanceBefore = BUSDContract.balanceOf(address(reflectionProxyContract));
+        uint256 balanceBefore = USDTContract.balanceOf(address(reflectionProxyContract));
 
         router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
             amountToSwap,
@@ -700,38 +700,36 @@ contract INUKO is IBEP20, Auth {
             address(reflectionProxyContract),
             block.timestamp
         );
+        uint256 amountUSDT = USDTContract.balanceOf(address(reflectionProxyContract)).sub(balanceBefore);
 
-        uint256 amountBUSD = BUSDContract.balanceOf(address(reflectionProxyContract)).sub(balanceBefore);
+        USDTContract.transferFrom(address(reflectionProxyContract), address(this), amountUSDT);
 
-        BUSDContract.transferFrom(address(reflectionProxyContract), address(this), amountBUSD);
+        uint256 totalUSDTFee = totalFee.sub(dynamicLiquidityFee.div(2)).sub(inverseBondFee);
+        uint256 amountUSDTLiquidity = amountUSDT.mul(dynamicLiquidityFee).div(totalUSDTFee).div(2);
+        uint256 amountUSDTReflection = amountUSDT.mul(reflectionFee).div(totalUSDTFee);
+        uint256 amountUSDTMarketing = amountUSDT.mul(marketingFee).div(totalUSDTFee);
+        uint256 amountUSDTInverseBond = amountUSDT.mul(inverseBondFee).div(totalUSDTFee);
 
-        uint256 totalBUSDFee = totalFee.sub(dynamicLiquidityFee.div(2)).sub(inverseBondFee);
-
-        uint256 amountBUSDLiquidity = amountBUSD.mul(dynamicLiquidityFee).div(totalBUSDFee).div(2);
-        uint256 amountBUSDReflection = amountBUSD.mul(reflectionFee).div(totalBUSDFee);
-        uint256 amountBUSDMarketing = amountBUSD.mul(marketingFee).div(totalBUSDFee);
-        uint256 amountBUSDInverseBond = amountBUSD.mul(inverseBondFee).div(totalBUSDFee);
-
-        try distributor.deposit(amountBUSDReflection) {} catch {}
+        try distributor.deposit(amountUSDTReflection) {} catch {}
         try IBond(bondContractAddress).deposit(amountTokenBond) {
             emit Transfer(address(this), bondContractAddress, amountTokenBond);
         } catch {}
 
-        BUSDContract.transferFrom(address(this), inverseBondContractAddress, amountBUSDInverseBond);
-        BUSDContract.transferFrom(address(this), marketingFeeReceiver, amountBUSDMarketing);
+        USDTContract.transferFrom(address(this), inverseBondContractAddress, amountUSDTInverseBond);
+        USDTContract.transferFrom(address(this), marketingFeeReceiver, amountUSDTMarketing);
 
         if(amountToLiquify > 0){
             router.addLiquidity(
                 address(this),
-                BUSD,
+                USDT,
                 amountToLiquify,
-                amountBUSDLiquidity,
+                amountUSDTLiquidity,
                 0,
                 0,
                 autoLiquidityReceiver,
                 block.timestamp
             );
-            emit AutoLiquify(amountBUSDLiquidity, amountToLiquify);
+            emit AutoLiquify(amountUSDTLiquidity, amountToLiquify);
         }
     }
 
@@ -741,7 +739,7 @@ contract INUKO is IBEP20, Auth {
         && autoBuybackEnabled
         && autoBuybackBlockLast + autoBuybackBlockPeriod <= block.number // After N blocks from last buyback
         //&& address(this).balance >= autoBuybackAmount;
-        && BUSDContract.balanceOf(address(this)) >= autoBuybackAmount;
+        && USDTContract.balanceOf(address(this)) >= autoBuybackAmount;
     }
 
     function triggerZeusBuyback(uint256 amount, bool triggerBuybackMultiplier) external authorized {
@@ -766,7 +764,7 @@ contract INUKO is IBEP20, Auth {
     function buyTokens(uint256 amount, address to) internal swapping {
         address[] memory path = new address[](2);
         //path[0] = WBNB;
-        path[0] = BUSD;
+        path[0] = USDT;
         path[1] = address(this);
 
         router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
@@ -913,6 +911,6 @@ contract INUKO is IBEP20, Auth {
 
     }
 
-    event AutoLiquify(uint256 amountBUSD, uint256 amountShiba);
+    event AutoLiquify(uint256 amountUSDT, uint256 amountShiba);
     event BuybackMultiplierActive(uint256 duration);
 }
