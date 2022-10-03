@@ -469,24 +469,17 @@ contract StakingLock {
 
     // Events
     event TokensDeposited(address from, uint256 amount, uint256 totalAmount);
-    event SettingChanged(uint256 newProfit,  uint256 newPeriod, bool status);
+    event SettingChanged(uint256 newPeriod, bool status);
     event TokenUnstaked(address recipient, uint256 amount);
 
-    constructor() {
+    constructor(address _bep20Token, uint256 _timePeriod, uint256 _profit) {
         owner = payable(msg.sender);
-        bep20Token = IBEP20(0x7Ff6a992707FD30223Ea3878143600D8Feb3978e);
-        bep20TokenAddress = 0x7Ff6a992707FD30223Ea3878143600D8Feb3978e;
-        timePeriod = 1;
+        bep20Token = IBEP20(_bep20Token);
+        bep20TokenAddress = _bep20Token;
+        timePeriod = _timePeriod;
+        profit = _profit;
         isActive = true;
     }
-
-    // constructor(address _bep20Token, uint256 _timePeriod) {
-    //     owner = payable(msg.sender);
-    //     bep20Token = IBEP20(_bep20Token);
-    //     bep20TokenAddress = _bep20Token;
-    //     timePeriod = _timePeriod;
-    //     isActive = true;
-    // }
 
     // Modifier
     /**
@@ -513,11 +506,10 @@ contract StakingLock {
         _;
     }
 
-    function settings(uint256 _timePeriod, uint256 _profit, bool _isActive) public onlyOwner{
+    function settings(uint256 _timePeriod, bool _isActive) public onlyOwner{
         timePeriod = _timePeriod;
-        profit = _profit;
         isActive = _isActive;
-        emit SettingChanged(_profit, _timePeriod, _isActive);
+        emit SettingChanged(_timePeriod, _isActive);
     }
 
     function stake(uint256 amount) public {
