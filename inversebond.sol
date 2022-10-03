@@ -467,7 +467,7 @@ contract InverseBond {
 
     bool private isActive;
 
-    uint256 public profit = 15000;
+    uint256 public profit = 10400;
     uint256 public availableToken = 0;
     uint256 profitDenominator = 10000;
 

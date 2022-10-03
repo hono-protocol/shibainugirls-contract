@@ -474,13 +474,13 @@ contract INUKO is IBEP20, Auth {
     mapping (address => bool) isTxLimitExempt;
     mapping (address => bool) isDividendExempt;
 
-    uint256 bondFee = 50;
-    uint256 inverseBondFee = 200;
+    uint256 bondFee = 150;
+    uint256 inverseBondFee = 150;
     uint256 liquidityFee = 100;
     uint256 buybackFee = 100;
-    uint256 reflectionFee = 400;
-    uint256 marketingFee = 50;
-    uint256 totalFee = 900;
+    uint256 reflectionFee = 600;
+    uint256 marketingFee = 100;
+    uint256 totalFee = 1200;
     uint256 feeDenominator = 10000;
 
     address public autoLiquidityReceiver;
