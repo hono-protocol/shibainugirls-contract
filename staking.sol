@@ -447,7 +447,7 @@ contract StakingLock {
     mapping (address => UserStakingInfo) public userInfos;
     struct UserStakingInfo {
         uint256 amount;
-        uint256 releaseTimeStamp;
+        uint256 stakedDate;
     }
 
     using SafeMath for uint256;
@@ -514,13 +514,13 @@ contract StakingLock {
 
     function stake(uint256 amount) public {
         userInfos[msg.sender].amount =  userInfos[msg.sender].amount + amount;
-        userInfos[msg.sender].releaseTimeStamp =  block.timestamp + timePeriod;
+        userInfos[msg.sender].stakedDate =  block.timestamp;
         bep20Token.transferFrom(msg.sender, address(this), amount);
         emit TokensDeposited(msg.sender, amount, userInfos[msg.sender].amount );
     }
 
     function claimAll() public noReentrant {
-        require( userInfos[msg.sender].releaseTimeStamp > block.timestamp, "Not yet!");
+        require( userInfos[msg.sender].stakedDate + timePeriod <= block.timestamp, "Not yet!");
         uint256 amountToUnstake = userInfos[msg.sender].amount;
         userInfos[msg.sender].amount = 0;
         bep20Token.transferFrom(address(this), msg.sender, amountToUnstake);
