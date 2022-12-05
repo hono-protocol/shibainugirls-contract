@@ -83,7 +83,11 @@ library EnumerableSet {
     /**
      * @dev Returns true if the value is in the set. O(1).
      */
-    function _contains(Set storage set, bytes32 value) private view returns (bool) {
+    function _contains(Set storage set, bytes32 value)
+        private
+        view
+        returns (bool)
+    {
         return set._indexes[value] != 0;
     }
 
@@ -104,7 +108,11 @@ library EnumerableSet {
      *
      * - `index` must be strictly less than {length}.
      */
-    function _at(Set storage set, uint256 index) private view returns (bytes32) {
+    function _at(Set storage set, uint256 index)
+        private
+        view
+        returns (bytes32)
+    {
         return set._values[index];
     }
 
@@ -132,7 +140,10 @@ library EnumerableSet {
      * Returns true if the value was added to the set, that is if it was not
      * already present.
      */
-    function add(Bytes32Set storage set, bytes32 value) internal returns (bool) {
+    function add(Bytes32Set storage set, bytes32 value)
+        internal
+        returns (bool)
+    {
         return _add(set._inner, value);
     }
 
@@ -142,14 +153,21 @@ library EnumerableSet {
      * Returns true if the value was removed from the set, that is if it was
      * present.
      */
-    function remove(Bytes32Set storage set, bytes32 value) internal returns (bool) {
+    function remove(Bytes32Set storage set, bytes32 value)
+        internal
+        returns (bool)
+    {
         return _remove(set._inner, value);
     }
 
     /**
      * @dev Returns true if the value is in the set. O(1).
      */
-    function contains(Bytes32Set storage set, bytes32 value) internal view returns (bool) {
+    function contains(Bytes32Set storage set, bytes32 value)
+        internal
+        view
+        returns (bool)
+    {
         return _contains(set._inner, value);
     }
 
@@ -170,7 +188,11 @@ library EnumerableSet {
      *
      * - `index` must be strictly less than {length}.
      */
-    function at(Bytes32Set storage set, uint256 index) internal view returns (bytes32) {
+    function at(Bytes32Set storage set, uint256 index)
+        internal
+        view
+        returns (bytes32)
+    {
         return _at(set._inner, index);
     }
 
@@ -182,7 +204,11 @@ library EnumerableSet {
      * this function has an unbounded cost, and using it as part of a state-changing function may render the function
      * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
      */
-    function values(Bytes32Set storage set) internal view returns (bytes32[] memory) {
+    function values(Bytes32Set storage set)
+        internal
+        view
+        returns (bytes32[] memory)
+    {
         bytes32[] memory store = _values(set._inner);
         bytes32[] memory result;
 
@@ -206,7 +232,10 @@ library EnumerableSet {
      * Returns true if the value was added to the set, that is if it was not
      * already present.
      */
-    function add(AddressSet storage set, address value) internal returns (bool) {
+    function add(AddressSet storage set, address value)
+        internal
+        returns (bool)
+    {
         return _add(set._inner, bytes32(uint256(uint160(value))));
     }
 
@@ -216,14 +245,21 @@ library EnumerableSet {
      * Returns true if the value was removed from the set, that is if it was
      * present.
      */
-    function remove(AddressSet storage set, address value) internal returns (bool) {
+    function remove(AddressSet storage set, address value)
+        internal
+        returns (bool)
+    {
         return _remove(set._inner, bytes32(uint256(uint160(value))));
     }
 
     /**
      * @dev Returns true if the value is in the set. O(1).
      */
-    function contains(AddressSet storage set, address value) internal view returns (bool) {
+    function contains(AddressSet storage set, address value)
+        internal
+        view
+        returns (bool)
+    {
         return _contains(set._inner, bytes32(uint256(uint160(value))));
     }
 
@@ -244,7 +280,11 @@ library EnumerableSet {
      *
      * - `index` must be strictly less than {length}.
      */
-    function at(AddressSet storage set, uint256 index) internal view returns (address) {
+    function at(AddressSet storage set, uint256 index)
+        internal
+        view
+        returns (address)
+    {
         return address(uint160(uint256(_at(set._inner, index))));
     }
 
@@ -256,7 +296,11 @@ library EnumerableSet {
      * this function has an unbounded cost, and using it as part of a state-changing function may render the function
      * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
      */
-    function values(AddressSet storage set) internal view returns (address[] memory) {
+    function values(AddressSet storage set)
+        internal
+        view
+        returns (address[] memory)
+    {
         bytes32[] memory store = _values(set._inner);
         address[] memory result;
 
@@ -290,14 +334,21 @@ library EnumerableSet {
      * Returns true if the value was removed from the set, that is if it was
      * present.
      */
-    function remove(UintSet storage set, uint256 value) internal returns (bool) {
+    function remove(UintSet storage set, uint256 value)
+        internal
+        returns (bool)
+    {
         return _remove(set._inner, bytes32(value));
     }
 
     /**
      * @dev Returns true if the value is in the set. O(1).
      */
-    function contains(UintSet storage set, uint256 value) internal view returns (bool) {
+    function contains(UintSet storage set, uint256 value)
+        internal
+        view
+        returns (bool)
+    {
         return _contains(set._inner, bytes32(value));
     }
 
@@ -318,7 +369,11 @@ library EnumerableSet {
      *
      * - `index` must be strictly less than {length}.
      */
-    function at(UintSet storage set, uint256 index) internal view returns (uint256) {
+    function at(UintSet storage set, uint256 index)
+        internal
+        view
+        returns (uint256)
+    {
         return uint256(_at(set._inner, index));
     }
 
@@ -330,7 +385,11 @@ library EnumerableSet {
      * this function has an unbounded cost, and using it as part of a state-changing function may render the function
      * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
      */
-    function values(UintSet storage set) internal view returns (uint256[] memory) {
+    function values(UintSet storage set)
+        internal
+        view
+        returns (uint256[] memory)
+    {
         bytes32[] memory store = _values(set._inner);
         uint256[] memory result;
 
@@ -342,19 +401,43 @@ library EnumerableSet {
         return result;
     }
 }
+
 interface IBEP20 {
     function totalSupply() external view returns (uint256);
+
     function decimals() external view returns (uint8);
+
     function symbol() external view returns (string memory);
+
     function name() external view returns (string memory);
+
     function getOwner() external view returns (address);
+
     function balanceOf(address account) external view returns (uint256);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function allowance(address _owner, address spender) external view returns (uint256);
+
+    function transfer(address recipient, uint256 amount)
+        external
+        returns (bool);
+
+    function allowance(address _owner, address spender)
+        external
+        view
+        returns (uint256);
+
     function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
+
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
 }
 
 interface IUniswapV2Pair {
@@ -362,17 +445,29 @@ interface IUniswapV2Pair {
 
     function token1() external pure returns (address);
 }
-interface IDEXRouter {
-    function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
-    function getAmountsIn(uint amountOut, address[] calldata path) external view returns (uint[] memory amounts);
 
+interface IDEXRouter {
+    function getAmountsOut(uint256 amountIn, address[] calldata path)
+        external
+        view
+        returns (uint256[] memory amounts);
+
+    function getAmountsIn(uint256 amountOut, address[] calldata path)
+        external
+        view
+        returns (uint256[] memory amounts);
 }
+
 interface IBond {
     function deposit(uint256 depositAmmount) external;
 }
+
 library SafeMath {
-    
-    function tryAdd(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function tryAdd(uint256 a, uint256 b)
+        internal
+        pure
+        returns (bool, uint256)
+    {
         unchecked {
             uint256 c = a + b;
             if (c < a) return (false, 0);
@@ -380,13 +475,22 @@ library SafeMath {
         }
     }
 
-    function trySub(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function trySub(uint256 a, uint256 b)
+        internal
+        pure
+        returns (bool, uint256)
+    {
         unchecked {
             if (b > a) return (false, 0);
             return (true, a - b);
         }
     }
-    function tryMul(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+
+    function tryMul(uint256 a, uint256 b)
+        internal
+        pure
+        returns (bool, uint256)
+    {
         unchecked {
             // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
             // benefit is lost if 'b' is also tested.
@@ -398,14 +502,22 @@ library SafeMath {
         }
     }
 
-    function tryDiv(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function tryDiv(uint256 a, uint256 b)
+        internal
+        pure
+        returns (bool, uint256)
+    {
         unchecked {
             if (b == 0) return (false, 0);
             return (true, a / b);
         }
     }
 
-    function tryMod(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function tryMod(uint256 a, uint256 b)
+        internal
+        pure
+        returns (bool, uint256)
+    {
         unchecked {
             if (b == 0) return (false, 0);
             return (true, a % b);
@@ -432,42 +544,59 @@ library SafeMath {
         return a % b;
     }
 
-    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function sub(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
         unchecked {
             require(b <= a, errorMessage);
             return a - b;
         }
     }
 
-    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function div(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
         unchecked {
             require(b > 0, errorMessage);
             return a / b;
         }
     }
 
-    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function mod(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
         unchecked {
             require(b > 0, errorMessage);
             return a % b;
         }
     }
 }
-contract Bond is IBond{
+
+contract Bond is IBond {
     using EnumerableSet for EnumerableSet.UintSet;
     using SafeMath for uint256;
-    mapping (address => EnumerableSet.UintSet) private bondHolders;
-    mapping (uint256 => BondData) public bondData;
-    BondMetadata[] public bondList ;
-    mapping (address => bool) public depositors;
+    mapping(address => EnumerableSet.UintSet) private bondHolders;
+    mapping(uint256 => BondData) public bondData;
+    BondMetadata[] public bondList;
+    mapping(address => bool) public depositors;
     uint256 private currentBondId = 1;
+
+    uint256 public lastUsdtBalance = 0;
+    uint256 public usdtGap = 0;
+    IUniswapV2Pair public usdtPair;
+
     struct BondData {
         uint256 amount;
         uint256 bondMetadataId;
         uint256 releaseTimeStamp;
     }
-    struct BondMetadata
-    {
+    struct BondMetadata {
         string name;
         uint256 weight;
         address lpToken;
@@ -506,17 +635,27 @@ contract Bond is IBond{
     event AllocationPerformed(address recipient, uint256 amount);
     event TokensUnlocked(address recipient, uint256 amount);
 
-    constructor(address _router, address _stableTokenAddress, address _bep20TokenAddress, address _vault) {
+    constructor(
+        address _router,
+        address _stableTokenAddress,
+        address _bep20TokenAddress,
+        address _vault,
+        uint256 _lastUsdtBalance,
+        uint256 _usdtGap,
+        IUniswapV2Pair _usdtPair
+    ) {
         router = IDEXRouter(_router);
         owner = payable(msg.sender);
         stableToken = IBEP20(_stableTokenAddress);
         stableTokenAddress = _stableTokenAddress;
         bep20Token = IBEP20(_bep20TokenAddress);
         bep20TokenAddress = _bep20TokenAddress;
-        bep20Token.approve(address(this),bep20Token.totalSupply());
+        bep20Token.approve(address(this), bep20Token.totalSupply());
+        lastUsdtBalance = _lastUsdtBalance;
+        usdtGap = _usdtGap;
         locked = false;
         vault = _vault;
-
+        usdtPair = _usdtPair;
     }
 
     // Modifier
@@ -535,29 +674,50 @@ contract Bond is IBond{
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(msg.sender == owner, "Message sender must be the contract's owner.");
+        require(
+            msg.sender == owner,
+            "Message sender must be the contract's owner."
+        );
         _;
     }
 
     modifier onlyDepositor() {
-        require(depositors[msg.sender] == true || msg.sender == bep20TokenAddress , "Depositor must be authorized or the token itself.");
+        require(
+            depositors[msg.sender] == true || msg.sender == bep20TokenAddress,
+            "Depositor must be authorized or the token itself."
+        );
         _;
+    }
+
+    function updateLastUsdtBalance(uint256 _lastUsdtBalance) public onlyOwner {
+        lastUsdtBalance = _lastUsdtBalance;
+    }
+
+    function updateUsdtGap(uint256 _usdtGap) public onlyOwner {
+        usdtGap = _usdtGap;
+    }
+
+    function updateUsdtPair(IUniswapV2Pair _usdtPair) public onlyOwner {
+        usdtPair = _usdtPair;
     }
 
     function bondListLength() external view returns (uint256) {
         return bondList.length;
     }
-     function addBond(address newVault) public onlyOwner
-     {
-         vault = newVault;
-     }
-    function addBond( string memory _name, 
-        uint256 _weight, 
+
+    function addBond(address newVault) public onlyOwner {
+        vault = newVault;
+    }
+
+    function addBond(
+        string memory _name,
+        uint256 _weight,
         address _lpToken,
         uint256 _premiumPercentage,
         uint256 _lockingPeriod,
         uint256 _sigBalanceUpperCap,
-        uint256 _sigBalanceLowerCap) public onlyOwner{
+        uint256 _sigBalanceLowerCap
+    ) public onlyOwner {
         bondList.push(
             BondMetadata({
                 name: _name,
@@ -569,82 +729,145 @@ contract Bond is IBond{
                 isActive: false,
                 sigBalanceUpperCap: _sigBalanceUpperCap,
                 sigBalanceLowerCap: _sigBalanceLowerCap
-            }));
-        totalWeight = totalWeight +  _weight;   
+            })
+        );
+        totalWeight = totalWeight + _weight;
     }
-    
-    function updateBond(uint256 id, string memory _name, uint256 _weight, uint256 _premiumPercentage ,uint256 _lockingPeriod) public onlyOwner{
+
+    function updateBond(
+        uint256 id,
+        string memory _name,
+        uint256 _weight,
+        uint256 _premiumPercentage,
+        uint256 _lockingPeriod
+    ) public onlyOwner {
         bondList[id].name = _name;
-        totalWeight = totalWeight - bondList[id].weight + _weight;   
+        totalWeight = totalWeight - bondList[id].weight + _weight;
         bondList[id].weight = _weight;
         bondList[id].premiumPercentage = _premiumPercentage;
         bondList[id].lockingPeriod = _lockingPeriod;
     }
 
-    function configureDepositor(address _depositor, bool enabled) public onlyOwner{
+    function configureDepositor(address _depositor, bool enabled)
+        public
+        onlyOwner
+    {
         depositors[_depositor] = enabled;
     }
 
-    function deposit(uint256 depositAmmount) external onlyDepositor{
-
+    function deposit(uint256 depositAmmount) external onlyDepositor {
         bep20Token.transferFrom(msg.sender, address(this), depositAmmount);
         uint256 length = bondList.length;
         for (uint256 pid = 0; pid < length; ++pid) {
-            bondList[pid].sigBalance = bondList[pid].sigBalance + depositAmmount.mul(bondList[pid].weight).div(totalWeight);
-            if(bondList[pid].sigBalance >= bondList[pid].sigBalanceUpperCap)
-            {
+            bondList[pid].sigBalance =
+                bondList[pid].sigBalance +
+                depositAmmount.mul(bondList[pid].weight).div(totalWeight);
+            if (bondList[pid].sigBalance >= bondList[pid].sigBalanceUpperCap) {
                 bondList[pid].isActive = true;
             }
         }
-        
+
+        bool update;
+        uint256 usdtBalance;
+        (update, usdtBalance) = shouldUpdate();
+        if (update) {
+            lastUsdtBalance = usdtBalance;
+        }
+
         emit TokensDeposited(msg.sender, depositAmmount);
     }
 
-    function buyBond(uint256 lpAmount, uint256 bondId) public {
-        require( bondList[bondId].isActive && bondList[bondId].sigBalance > bondList[bondId].sigBalanceLowerCap, "Bond have not yet activated");
+    function shouldUpdate() public view returns (bool, uint256) {
+        address usdtToken = usdtPair.token0();
 
-        uint256 sigAmount = LpToSig(bondList[bondId].lpToken, lpAmount).mul(bondList[bondId].premiumPercentage).div(profitDenominator);
-
-        if(sigAmount > bondList[bondId].sigBalance || bondList[bondId].sigBalance - sigAmount <= bondList[bondId].sigBalanceLowerCap)
-        {
-            sigAmount = bondList[bondId].sigBalance - bondList[bondId].sigBalanceLowerCap;
-            lpAmount = SIGtoLP(bondList[bondId].lpToken,sigAmount).mul(profitDenominator).div(bondList[bondId].premiumPercentage);
+        if (address(usdtToken) == address(bep20TokenAddress)) {
+            usdtToken = usdtPair.token1();
         }
 
-        
+        uint256 usdtBalance = IBEP20(usdtToken).balanceOf(address(usdtPair));
+        return (usdtBalance <= (lastUsdtBalance + usdtGap), usdtBalance);
+    }
+
+    function buyBond(uint256 lpAmount, uint256 bondId) public {
+        require(
+            bondList[bondId].isActive &&
+                bondList[bondId].sigBalance >
+                bondList[bondId].sigBalanceLowerCap,
+            "Bond have not yet activated"
+        );
+        bool update;
+        (update, ) = shouldUpdate();
+        require(update, "Not valid!");
+
+        uint256 sigAmount = LpToSig(bondList[bondId].lpToken, lpAmount)
+            .mul(bondList[bondId].premiumPercentage)
+            .div(profitDenominator);
+
+        if (
+            sigAmount > bondList[bondId].sigBalance ||
+            bondList[bondId].sigBalance - sigAmount <=
+            bondList[bondId].sigBalanceLowerCap
+        ) {
+            sigAmount =
+                bondList[bondId].sigBalance -
+                bondList[bondId].sigBalanceLowerCap;
+            lpAmount = SIGtoLP(bondList[bondId].lpToken, sigAmount)
+                .mul(profitDenominator)
+                .div(bondList[bondId].premiumPercentage);
+        }
+
         bondData[currentBondId].amount = sigAmount;
 
         //IBEP20(bondList[bondId].lpToken).transferFrom(msg.sender, address(this), lpAmount);
-        IBEP20(bondList[bondId].lpToken).transferFrom(msg.sender, vault, lpAmount);
+        IBEP20(bondList[bondId].lpToken).transferFrom(
+            msg.sender,
+            vault,
+            lpAmount
+        );
 
         bondHolders[msg.sender].add(currentBondId);
 
-        bondData[currentBondId].releaseTimeStamp = block.timestamp + bondList[bondId].lockingPeriod;
+        bondData[currentBondId].releaseTimeStamp =
+            block.timestamp +
+            bondList[bondId].lockingPeriod;
         bondData[currentBondId].bondMetadataId = bondId;
 
-        currentBondId = currentBondId +1;
+        currentBondId = currentBondId + 1;
         bondList[bondId].sigBalance = bondList[bondId].sigBalance - sigAmount;
 
-        if(bondList[bondId].sigBalance <= bondList[bondId].sigBalanceLowerCap)
-        {
+        if (
+            bondList[bondId].sigBalance <= bondList[bondId].sigBalanceLowerCap
+        ) {
             bondList[bondId].isActive = false;
         }
     }
-    function LpToToken(address _pair, uint256 lpAmount) public view returns (uint256) {
+
+    function LpToToken(address _pair, uint256 lpAmount)
+        public
+        view
+        returns (uint256)
+    {
         address otherBep20Token = IUniswapV2Pair(_pair).token0();
-        if(address(otherBep20Token) == address(bep20TokenAddress))
-        {
+        if (address(otherBep20Token) == address(bep20TokenAddress)) {
             otherBep20Token = IUniswapV2Pair(_pair).token1();
         }
-        uint256 balanceOfotherBep20Token = IBEP20(otherBep20Token).balanceOf(_pair);
+        uint256 balanceOfotherBep20Token = IBEP20(otherBep20Token).balanceOf(
+            _pair
+        );
         uint256 totalLpTokenSupply = IBEP20(_pair).totalSupply();
-        return balanceOfotherBep20Token.mul(2).mul(lpAmount).div(totalLpTokenSupply);
+        return
+            balanceOfotherBep20Token.mul(2).mul(lpAmount).div(
+                totalLpTokenSupply
+            );
     }
 
-    function TokenToLP(address _pair, uint256 tokenAmount) public view returns (uint256) {
+    function TokenToLP(address _pair, uint256 tokenAmount)
+        public
+        view
+        returns (uint256)
+    {
         address token0 = IUniswapV2Pair(_pair).token0();
-        if(address(token0) == address(bep20TokenAddress))
-        {
+        if (address(token0) == address(bep20TokenAddress)) {
             token0 = IUniswapV2Pair(_pair).token1();
         }
         uint256 totalLPToken = IBEP20(_pair).totalSupply();
@@ -653,11 +876,14 @@ contract Bond is IBond{
     }
 
     //Dont use profit here yet
-    function LpToSig(address _pair, uint256 lpAmount) public view returns (uint256) {
+    function LpToSig(address _pair, uint256 lpAmount)
+        public
+        view
+        returns (uint256)
+    {
         address otherBep20Token = IUniswapV2Pair(_pair).token0();
-        uint256 lpAmountToTokenAmount = LpToToken(_pair,lpAmount);
-        if(address(otherBep20Token) == address(bep20TokenAddress))
-        {
+        uint256 lpAmountToTokenAmount = LpToToken(_pair, lpAmount);
+        if (address(otherBep20Token) == address(bep20TokenAddress)) {
             otherBep20Token = IUniswapV2Pair(_pair).token1();
         }
         address[] memory path = new address[](2);
@@ -667,56 +893,73 @@ contract Bond is IBond{
         return IDEXRouter(router).getAmountsIn(lpAmountToTokenAmount, path)[0];
     }
 
-    function maxCanTrade(uint256 bondId) public view returns (uint256 k_)
-    {
-        if(bondList[bondId].sigBalance <= bondList[bondId].sigBalanceLowerCap) 
-        {
+    function maxCanTrade(uint256 bondId) public view returns (uint256 k_) {
+        if (
+            bondList[bondId].sigBalance <= bondList[bondId].sigBalanceLowerCap
+        ) {
             return 0;
         }
 
-        uint256 sigBalanceLeft = bondList[bondId].sigBalance - bondList[bondId].sigBalanceLowerCap;
-        return SIGtoLP(bondList[bondId].lpToken, sigBalanceLeft).mul(profitDenominator).div(bondList[bondId].premiumPercentage);        
+        uint256 sigBalanceLeft = bondList[bondId].sigBalance -
+            bondList[bondId].sigBalanceLowerCap;
+        return
+            SIGtoLP(bondList[bondId].lpToken, sigBalanceLeft)
+                .mul(profitDenominator)
+                .div(bondList[bondId].premiumPercentage);
     }
 
     //Dont use profit here yet
-    function SIGtoLP(address _pair, uint256 sigAmount) public view returns (uint256 k_) {
+    function SIGtoLP(address _pair, uint256 sigAmount)
+        public
+        view
+        returns (uint256 k_)
+    {
         address token0 = IUniswapV2Pair(_pair).token0();
-        if(address(token0) == address(bep20TokenAddress))
-        {
+        if (address(token0) == address(bep20TokenAddress)) {
             token0 = IUniswapV2Pair(_pair).token1();
         }
         address[] memory path = new address[](2);
 
         path[0] = bep20TokenAddress;
         path[1] = token0;
-        uint256 totalTokenWorth = IDEXRouter(router).getAmountsOut(sigAmount, path)[1];
+        uint256 totalTokenWorth = IDEXRouter(router).getAmountsOut(
+            sigAmount,
+            path
+        )[1];
         return TokenToLP(_pair, totalTokenWorth);
     }
 
-    function CountBond(address bonder)  public view returns (uint256){
+    function CountBond(address bonder) public view returns (uint256) {
         return bondHolders[bonder].length();
     }
 
-    function GetBondInfo(uint256 index)  public view returns (uint256){
+    function GetBondInfo(uint256 index) public view returns (uint256) {
         return bondHolders[msg.sender].at(index);
     }
 
     function claim(uint256 index) public noReentrant {
-
-        if( bondData[bondHolders[msg.sender].at(index)].releaseTimeStamp < block.timestamp)
-        {
-            bep20Token.transfer(msg.sender,bondData[bondHolders[msg.sender].at(index)].amount);
+        if (
+            bondData[bondHolders[msg.sender].at(index)].releaseTimeStamp <
+            block.timestamp
+        ) {
+            bep20Token.transfer(
+                msg.sender,
+                bondData[bondHolders[msg.sender].at(index)].amount
+            );
             bondHolders[msg.sender].remove(bondHolders[msg.sender].at(index));
         }
-
     }
 
-    function transferAccidentallyLockedTokens(IBEP20 token, uint256 amount) public onlyOwner noReentrant {
+    function transferAccidentallyLockedTokens(IBEP20 token, uint256 amount)
+        public
+        onlyOwner
+        noReentrant
+    {
         require(address(token) != address(0), "Token address can not be zero");
         token.transfer(owner, amount);
     }
 
-    function withdrawEth(uint256 amount) public onlyOwner noReentrant{
+    function withdrawEth(uint256 amount) public onlyOwner noReentrant {
         require(amount <= address(this).balance, "Insufficient funds");
         owner.transfer(amount);
     }

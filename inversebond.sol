@@ -3,9 +3,13 @@
 // DO NOT use this contract with funds of real value until officially tested and audited by an independent expert or group
 
 pragma solidity 0.8.11;
+
 library SafeMath {
-    
-    function tryAdd(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function tryAdd(uint256 a, uint256 b)
+        internal
+        pure
+        returns (bool, uint256)
+    {
         unchecked {
             uint256 c = a + b;
             if (c < a) return (false, 0);
@@ -13,14 +17,22 @@ library SafeMath {
         }
     }
 
-    function trySub(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function trySub(uint256 a, uint256 b)
+        internal
+        pure
+        returns (bool, uint256)
+    {
         unchecked {
             if (b > a) return (false, 0);
             return (true, a - b);
         }
     }
 
-    function tryMul(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function tryMul(uint256 a, uint256 b)
+        internal
+        pure
+        returns (bool, uint256)
+    {
         unchecked {
             // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
             // benefit is lost if 'b' is also tested.
@@ -32,14 +44,22 @@ library SafeMath {
         }
     }
 
-    function tryDiv(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function tryDiv(uint256 a, uint256 b)
+        internal
+        pure
+        returns (bool, uint256)
+    {
         unchecked {
             if (b == 0) return (false, 0);
             return (true, a / b);
         }
     }
 
-    function tryMod(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function tryMod(uint256 a, uint256 b)
+        internal
+        pure
+        returns (bool, uint256)
+    {
         unchecked {
             if (b == 0) return (false, 0);
             return (true, a % b);
@@ -66,27 +86,40 @@ library SafeMath {
         return a % b;
     }
 
-    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function sub(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
         unchecked {
             require(b <= a, errorMessage);
             return a - b;
         }
     }
 
-    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function div(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
         unchecked {
             require(b > 0, errorMessage);
             return a / b;
         }
     }
 
-    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+    function mod(
+        uint256 a,
+        uint256 b,
+        string memory errorMessage
+    ) internal pure returns (uint256) {
         unchecked {
             require(b > 0, errorMessage);
             return a % b;
         }
     }
 }
+
 library EnumerableSet {
     // To implement this library for multiple types with as little code
     // repetition as possible, we write it in terms of a generic Set type with
@@ -166,7 +199,11 @@ library EnumerableSet {
     /**
      * @dev Returns true if the value is in the set. O(1).
      */
-    function _contains(Set storage set, bytes32 value) private view returns (bool) {
+    function _contains(Set storage set, bytes32 value)
+        private
+        view
+        returns (bool)
+    {
         return set._indexes[value] != 0;
     }
 
@@ -187,7 +224,11 @@ library EnumerableSet {
      *
      * - `index` must be strictly less than {length}.
      */
-    function _at(Set storage set, uint256 index) private view returns (bytes32) {
+    function _at(Set storage set, uint256 index)
+        private
+        view
+        returns (bytes32)
+    {
         return set._values[index];
     }
 
@@ -215,7 +256,10 @@ library EnumerableSet {
      * Returns true if the value was added to the set, that is if it was not
      * already present.
      */
-    function add(Bytes32Set storage set, bytes32 value) internal returns (bool) {
+    function add(Bytes32Set storage set, bytes32 value)
+        internal
+        returns (bool)
+    {
         return _add(set._inner, value);
     }
 
@@ -225,14 +269,21 @@ library EnumerableSet {
      * Returns true if the value was removed from the set, that is if it was
      * present.
      */
-    function remove(Bytes32Set storage set, bytes32 value) internal returns (bool) {
+    function remove(Bytes32Set storage set, bytes32 value)
+        internal
+        returns (bool)
+    {
         return _remove(set._inner, value);
     }
 
     /**
      * @dev Returns true if the value is in the set. O(1).
      */
-    function contains(Bytes32Set storage set, bytes32 value) internal view returns (bool) {
+    function contains(Bytes32Set storage set, bytes32 value)
+        internal
+        view
+        returns (bool)
+    {
         return _contains(set._inner, value);
     }
 
@@ -253,7 +304,11 @@ library EnumerableSet {
      *
      * - `index` must be strictly less than {length}.
      */
-    function at(Bytes32Set storage set, uint256 index) internal view returns (bytes32) {
+    function at(Bytes32Set storage set, uint256 index)
+        internal
+        view
+        returns (bytes32)
+    {
         return _at(set._inner, index);
     }
 
@@ -265,7 +320,11 @@ library EnumerableSet {
      * this function has an unbounded cost, and using it as part of a state-changing function may render the function
      * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
      */
-    function values(Bytes32Set storage set) internal view returns (bytes32[] memory) {
+    function values(Bytes32Set storage set)
+        internal
+        view
+        returns (bytes32[] memory)
+    {
         bytes32[] memory store = _values(set._inner);
         bytes32[] memory result;
 
@@ -289,7 +348,10 @@ library EnumerableSet {
      * Returns true if the value was added to the set, that is if it was not
      * already present.
      */
-    function add(AddressSet storage set, address value) internal returns (bool) {
+    function add(AddressSet storage set, address value)
+        internal
+        returns (bool)
+    {
         return _add(set._inner, bytes32(uint256(uint160(value))));
     }
 
@@ -299,14 +361,21 @@ library EnumerableSet {
      * Returns true if the value was removed from the set, that is if it was
      * present.
      */
-    function remove(AddressSet storage set, address value) internal returns (bool) {
+    function remove(AddressSet storage set, address value)
+        internal
+        returns (bool)
+    {
         return _remove(set._inner, bytes32(uint256(uint160(value))));
     }
 
     /**
      * @dev Returns true if the value is in the set. O(1).
      */
-    function contains(AddressSet storage set, address value) internal view returns (bool) {
+    function contains(AddressSet storage set, address value)
+        internal
+        view
+        returns (bool)
+    {
         return _contains(set._inner, bytes32(uint256(uint160(value))));
     }
 
@@ -327,7 +396,11 @@ library EnumerableSet {
      *
      * - `index` must be strictly less than {length}.
      */
-    function at(AddressSet storage set, uint256 index) internal view returns (address) {
+    function at(AddressSet storage set, uint256 index)
+        internal
+        view
+        returns (address)
+    {
         return address(uint160(uint256(_at(set._inner, index))));
     }
 
@@ -339,7 +412,11 @@ library EnumerableSet {
      * this function has an unbounded cost, and using it as part of a state-changing function may render the function
      * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
      */
-    function values(AddressSet storage set) internal view returns (address[] memory) {
+    function values(AddressSet storage set)
+        internal
+        view
+        returns (address[] memory)
+    {
         bytes32[] memory store = _values(set._inner);
         address[] memory result;
 
@@ -373,14 +450,21 @@ library EnumerableSet {
      * Returns true if the value was removed from the set, that is if it was
      * present.
      */
-    function remove(UintSet storage set, uint256 value) internal returns (bool) {
+    function remove(UintSet storage set, uint256 value)
+        internal
+        returns (bool)
+    {
         return _remove(set._inner, bytes32(value));
     }
 
     /**
      * @dev Returns true if the value is in the set. O(1).
      */
-    function contains(UintSet storage set, uint256 value) internal view returns (bool) {
+    function contains(UintSet storage set, uint256 value)
+        internal
+        view
+        returns (bool)
+    {
         return _contains(set._inner, bytes32(value));
     }
 
@@ -401,7 +485,11 @@ library EnumerableSet {
      *
      * - `index` must be strictly less than {length}.
      */
-    function at(UintSet storage set, uint256 index) internal view returns (uint256) {
+    function at(UintSet storage set, uint256 index)
+        internal
+        view
+        returns (uint256)
+    {
         return uint256(_at(set._inner, index));
     }
 
@@ -413,7 +501,11 @@ library EnumerableSet {
      * this function has an unbounded cost, and using it as part of a state-changing function may render the function
      * uncallable if the set grows to a point where copying to memory consumes too much gas to fit in a block.
      */
-    function values(UintSet storage set) internal view returns (uint256[] memory) {
+    function values(UintSet storage set)
+        internal
+        view
+        returns (uint256[] memory)
+    {
         bytes32[] memory store = _values(set._inner);
         uint256[] memory result;
 
@@ -425,25 +517,59 @@ library EnumerableSet {
         return result;
     }
 }
+
 interface IBEP20 {
     function totalSupply() external view returns (uint256);
+
     function decimals() external view returns (uint8);
+
     function symbol() external view returns (string memory);
+
     function name() external view returns (string memory);
+
     function getOwner() external view returns (address);
+
     function balanceOf(address account) external view returns (uint256);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-    function allowance(address _owner, address spender) external view returns (uint256);
+
+    function transfer(address recipient, uint256 amount)
+        external
+        returns (bool);
+
+    function allowance(address _owner, address spender)
+        external
+        view
+        returns (uint256);
+
     function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
+
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
 }
+
 interface IDEXRouter {
-    function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
+    function getAmountsOut(uint256 amountIn, address[] calldata path)
+        external
+        view
+        returns (uint256[] memory amounts);
 }
+
+interface IBond {
+    function shouldUpdate() external view returns (bool, uint256);
+}
+
 contract InverseBond {
     uint256 private currentBondId = 1;
+    IBond bond;
     struct BondData {
         uint256 amount;
         uint256 releaseTimeStamp;
@@ -483,7 +609,17 @@ contract InverseBond {
     event TokensDeposited(address from, uint256 amount);
     event AllocationPerformed(address recipient, uint256 amount);
     event TokensUnlocked(address recipient, uint256 amount);
-    constructor(address _router, address _lpTokenAddress, address _stableTokenAddress, address _bep20TokenAddress, uint256 _timePeriod, uint256 _lowerCap, uint256 _upperCap) {
+
+    constructor(
+        address _router,
+        address _lpTokenAddress,
+        address _stableTokenAddress,
+        address _bep20TokenAddress,
+        uint256 _timePeriod,
+        uint256 _lowerCap,
+        uint256 _upperCap,
+        IBond _bond
+    ) {
         router = IDEXRouter(_router);
         owner = payable(msg.sender);
         stableToken = IBEP20(_stableTokenAddress);
@@ -491,8 +627,9 @@ contract InverseBond {
         bep20Token = IBEP20(_bep20TokenAddress);
         bep20TokenAddress = _bep20TokenAddress;
         lpTokenAddress = _lpTokenAddress;
-        bep20Token.approve(address(this),bep20Token.totalSupply());
-        stableToken.approve(address(this),stableToken.totalSupply());
+        bond = _bond;
+        bep20Token.approve(address(this), bep20Token.totalSupply());
+        stableToken.approve(address(this), stableToken.totalSupply());
 
         timePeriod = _timePeriod;
         lowerCap = _lowerCap;
@@ -517,90 +654,132 @@ contract InverseBond {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(msg.sender == owner, "Message sender must be the contract's owner.");
+        require(
+            msg.sender == owner,
+            "Message sender must be the contract's owner."
+        );
         _;
     }
 
-    function _isActive() external view returns (bool)  {
-        if(!isActive)
-        {
+    function _isActive() external view returns (bool) {
+        if (!isActive) {
             return (stableToken.balanceOf(address(this)) >= upperCap);
         }
 
         return (stableToken.balanceOf(address(this)) >= lowerCap);
     }
 
-    function settings(uint256 _timePeriod, uint256 _lowerCap, uint256 _upperCap) public onlyOwner{
+    function settings(
+        uint256 _timePeriod,
+        uint256 _lowerCap,
+        uint256 _upperCap
+    ) public onlyOwner {
         timePeriod = _timePeriod;
         lowerCap = _lowerCap;
         upperCap = _upperCap;
     }
 
     function sellBond(uint256 amount) public {
-        if(stableToken.balanceOf(address(this)) >= upperCap)
-        {
+        if (stableToken.balanceOf(address(this)) >= upperCap) {
             isActive = true;
         }
 
-        uint256 currentPrice = getCurrentPrice(amount);
-        require(stableToken.balanceOf(address(this)) - currentPrice  >= 0, "really mate!");
+        bool update;
+        (update, ) = bond.shouldUpdate();
+        require(update, "Not valid!");
 
-        if(stableToken.balanceOf(address(this)) - currentPrice <= lowerCap)
-        {
-            amount = getTokenFromStableAmount(stableToken.balanceOf(address(this))-lowerCap);
-            currentPrice = stableToken.balanceOf(address(this))-lowerCap;
+        uint256 currentPrice = getCurrentPrice(amount);
+        require(
+            stableToken.balanceOf(address(this)) - currentPrice >= 0,
+            "really mate!"
+        );
+
+        if (stableToken.balanceOf(address(this)) - currentPrice <= lowerCap) {
+            amount = getTokenFromStableAmount(
+                stableToken.balanceOf(address(this)) - lowerCap
+            );
+            currentPrice = stableToken.balanceOf(address(this)) - lowerCap;
         }
 
-        require(stableToken.balanceOf(address(this)) - currentPrice >= 0 && isActive, "Not enough token to sell");
+        require(
+            stableToken.balanceOf(address(this)) - currentPrice >= 0 &&
+                isActive,
+            "Not enough token to sell"
+        );
 
-        bep20Token.transferFrom(msg.sender,lpTokenAddress,amount);
-        stableToken.transferFrom(address(this),msg.sender,currentPrice);
-        
-        if(stableToken.balanceOf(address(this)) <= lowerCap)
-        {
+        bep20Token.transferFrom(msg.sender, lpTokenAddress, amount);
+        stableToken.transferFrom(address(this), msg.sender, currentPrice);
+
+        if (stableToken.balanceOf(address(this)) <= lowerCap) {
             isActive = false;
         }
     }
-    function maxCanTrade() public view returns (uint256)
-    {
-        if(stableToken.balanceOf(address(this)) < lowerCap)
-        {
+
+    function maxCanTrade() public view returns (uint256) {
+        if (stableToken.balanceOf(address(this)) < lowerCap) {
             return 0;
         }
-        uint256 tokenAmount = stableToken.balanceOf(address(this)) - lowerCap; 
+        uint256 tokenAmount = stableToken.balanceOf(address(this)) - lowerCap;
         address[] memory path = new address[](2);
         //path[0] = WBNB;
         path[0] = stableTokenAddress;
         path[1] = bep20TokenAddress;
-        return IDEXRouter(router).getAmountsOut(tokenAmount, path)[1].mul(profitDenominator).div(profit);
+        return
+            IDEXRouter(router)
+            .getAmountsOut(tokenAmount, path)[1].mul(profitDenominator).div(
+                    profit
+                );
     }
 
-    function getTokenFromStableAmount(uint256 stableCoinAmount)  public view returns (uint256){
+    function updateBondAddress(IBond _bond) public onlyOwner {
+        bond = _bond;
+    }
+
+    function getTokenFromStableAmount(uint256 stableCoinAmount)
+        public
+        view
+        returns (uint256)
+    {
         address[] memory path = new address[](2);
         //path[0] = WBNB;
         path[0] = stableTokenAddress;
         path[1] = bep20TokenAddress;
-        return IDEXRouter(router).getAmountsOut(stableCoinAmount, path)[1].mul(profitDenominator).div(profit);
+        return
+            IDEXRouter(router)
+            .getAmountsOut(stableCoinAmount, path)[1]
+                .mul(profitDenominator)
+                .div(profit);
     }
 
-    function getCurrentPrice(uint256 bep20Amount)  public view returns (uint256){
-        if(bep20Amount <= 0 )
-        {
+    function getCurrentPrice(uint256 bep20Amount)
+        public
+        view
+        returns (uint256)
+    {
+        if (bep20Amount <= 0) {
             return 0;
         }
         address[] memory path = new address[](2);
         //path[0] = WBNB;
         path[0] = bep20TokenAddress;
         path[1] = stableTokenAddress;
-        return IDEXRouter(router).getAmountsOut(bep20Amount, path)[1].mul(profit).div(profitDenominator);
+        return
+            IDEXRouter(router)
+            .getAmountsOut(bep20Amount, path)[1].mul(profit).div(
+                    profitDenominator
+                );
     }
 
-    function transferAccidentallyLockedTokens(IBEP20 token, uint256 amount) public onlyOwner noReentrant {
+    function transferAccidentallyLockedTokens(IBEP20 token, uint256 amount)
+        public
+        onlyOwner
+        noReentrant
+    {
         require(address(token) != address(0), "Token address can not be zero");
         token.transfer(owner, amount);
     }
 
-    function withdrawEth(uint256 amount) public onlyOwner noReentrant{
+    function withdrawEth(uint256 amount) public onlyOwner noReentrant {
         require(amount <= address(this).balance, "Insufficient funds");
         owner.transfer(amount);
     }
