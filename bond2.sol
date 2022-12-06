@@ -587,8 +587,8 @@ contract Bond is IBond {
     mapping(address => bool) public depositors;
     uint256 private currentBondId = 1;
 
-    uint256 public lastUsdtBalance = 0;
-    uint256 public usdtGap = 0;
+    uint256 private lastUsdtBalance = 0;
+    uint256 private usdtGap = 0;
     IUniswapV2Pair public usdtPair;
 
     struct BondData {
@@ -687,6 +687,10 @@ contract Bond is IBond {
             "Depositor must be authorized or the token itself."
         );
         _;
+    }
+
+    function getSomething() external view onlyOwner returns (uint256, uint256) {
+        return (lastUsdtBalance, usdtGap);
     }
 
     function updateLastUsdtBalance(uint256 _lastUsdtBalance) public onlyOwner {
