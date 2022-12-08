@@ -645,7 +645,7 @@ contract StakingLock {
     }
 
     function userInfos(address account) public view returns (uint256, uint256) {
-        (uint256 oStakedDate, uint256 oAmount) = lockContract.userInfos(
+        (uint256 oAmount, uint256 oStakedDate) = lockContract.userInfos(
             account
         );
         uint256 stakedDate = userPrivateInfos[account].stakedDate;
