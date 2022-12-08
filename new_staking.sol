@@ -658,6 +658,11 @@ contract StakingLock {
         );
     }
 
+    function updateUserClaimed(uint256 amount, address _user) public onlyOwner {
+        withdrawedInfos[_user] = amount;
+    }
+
+
     function settings(uint256 _timePeriod, bool _isActive) public onlyOwner {
         timePeriod = _timePeriod;
         isActive = _isActive;
