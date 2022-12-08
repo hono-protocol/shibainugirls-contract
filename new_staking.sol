@@ -640,11 +640,22 @@ contract StakingLock {
         _;
     }
 
+    function max(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a >= b ? a : b;
+    }
+
     function userInfos(address account) public view returns (uint256, uint256) {
-        (uint256 amount, uint256 stakedDate) = lockContract.userInfos(account);
+        (uint256 oStakedDate, uint256 oAmount) = lockContract.userInfos(
+            account
+        );
+        uint256 stakedDate = userPrivateInfos[account].stakedDate;
+        uint256 amount = userPrivateInfos[account].amount;
         uint256 withdrawedAmount = withdrawedInfos[account];
 
-        return (amount - withdrawedAmount, stakedDate);
+        return (
+            amount + oAmount - withdrawedAmount,
+            max(oStakedDate, stakedDate)
+        );
     }
 
     function settings(uint256 _timePeriod, bool _isActive) public onlyOwner {
