@@ -665,12 +665,12 @@ contract StakingLock {
     }
 
     function stake(uint256 amount) public {
-        bep20Token.transferFrom(msg.sender, address(this), amount);
         userPrivateInfos[msg.sender].amount =
             userPrivateInfos[msg.sender].amount +
             amount;
         userPrivateInfos[msg.sender].stakedDate = block.timestamp;
         (uint256 stakedAmount, ) = userInfos(msg.sender);
+        bep20Token.transferFrom(msg.sender, address(this), amount);
         emit TokensDeposited(msg.sender, amount, stakedAmount);
     }
 
