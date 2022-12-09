@@ -708,7 +708,7 @@ contract InverseBond {
         );
 
         bep20Token.transferFrom(msg.sender, lpTokenAddress, amount);
-        stableToken.transferFrom(address(this), msg.sender, currentPrice);
+        stableToken.transfer(address(this), msg.sender, currentPrice);
 
         if (stableToken.balanceOf(address(this)) <= lowerCap) {
             isActive = false;
