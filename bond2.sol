@@ -709,7 +709,7 @@ contract Bond is IBond {
         return bondList.length;
     }
 
-    function addBond(address newVault) public onlyOwner {
+    function updateVault(address newVault) public onlyOwner {
         vault = newVault;
     }
 
